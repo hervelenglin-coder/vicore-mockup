@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+
+{% block extracss %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/eurotunnel_web.css') }}">   
+    
+
+{% endblock extracss %}
+
+{% block extrascripts %}
+
+
+<link rel="stylesheet" href=>
+{#  This script isn't needed in base #}
+  <script type="text/javascript">
+
+    UPDATE_OVERALL_MS = 10000;
+function updateStatus(status,responseStatus)
+  {
+    
+    
+
+    if(responseStatus == 'success')
+    {
+        if(status == 'false')
+        {
+            $("#overallStatusIndicator").removeClass("status-healthy status-unknown").addClass("status-error");            
+        }
+        else
+        {
+            $("#overallStatusIndicator").removeClass("status-error status-unknown").addClass("status-healthy");
+        }
+        setTimeout(getOverallStatus,UPDATE_OVERALL_MS);
+    }
+    else
+    {
+        $("#overallStatusIndicator").removeClass("status-error status-healthy").addClass("status-unknown");
+        console.log( "Response status was: " + respCode);
+    }
+  }
+
+  function updateSingleStatus(hb_time_str,responseStatus,system_id,url)
+  {
+    
+    MAX_HB_AGE_MS = {{ hb_max_age }};
+    display = $( "#statusDropdown > a > div[data-system='" + system_id + "']" );
+    if(responseStatus == 'success')
+    {
+  
+      let time = new Date(hb_time_str);//I should be a date time
+      let now = new Date($.now());
+      let recheckTimeMS = -1;
+
+      if(now-time > MAX_HB_AGE_MS)
+      {
+        display.removeClass("status-healthy status-unknown").addClass("status-error");   
+        //recheck in ten seconds, see if it's fixed
+        recheckTimeMS = 10000;
+      }
+      else
+      {
+        display.removeClass("status-error status-unknown").addClass("status-healthy");   
+        // it's fine, check again in 1 minute, no need to hammer the server
+        recheckTime = new Date(time);
+        recheckTimeMS = recheckTime - now
+      }
+      
+     // console.log(`recheck at ${recheckTime} now is${now}`);
+      setTimeout(function() 
+      {
+      $.get( url,function(data, status) {updateSingleStatus(data,status,system_id,url)})
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log("Failed getting indivual status for system:" + system_id);
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown );
+      });
+    }
+    ,recheckTimeMS);
+        
+    }
+    else
+    {
+        display.removeClass("status-error status-healthy").addClass("status-unknown");
+        console.log( "Response status was: " + respCode);
+    }
+  }
+
+  function getOverallStatus()
+  {
+    let url = "{{ url_for('get_worst_system_status') }}";
+    $.get( url,updateStatus)
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      console.log("Failed getting overall status");
+      console.log(jqXHR);
+      console.log(textStatus);
+      console.log(errorThrown );
+  });
+  }
+
+  {% for install in systems %}
+  function getIndivaulStatus{{install.installation_id}}()
+  {
+      let system_id = {{install.installation_id}} //this.data("system") would also do it
+      let url = "{{ url_for('system_last_hb_time',system=install.installation_id) }}";
+     
+      console.debug(url);
+      $.get( url,function(data, status) {updateSingleStatus(data,status,system_id,url)})
+      .fail(function( jqXHR, textStatus, errorThrown ) {
+        console.error("Failed getting indivual status for system:",system_id);
+        console.error(jqXHR);
+        console.error(textStatus);
+        console.error(errorThrown );
+    }); 
+    
+    
+  }
+
+  {% endfor %}
+    
+  
+  $(window).on('load', function () {
+    getOverallStatus();   
+    {% for install in systems %}
+    {# call all of the system status functions #}
+    getIndivaulStatus{{install.installation_id}}();
+    
+    {% endfor %}
+  }
+)
+  </script>
+
+{% block page_extra_header %} {% endblock %}
+
+{% endblock %}
+{# This template is for logged in users, and builds atop base.html, which is for unauthed users. #}
+{% block content %}
+    <nav class="navbar navbar-expand-sm auth_head" > 
+        <div class="navbar-collapse" id="navbarText">
+          <ul class="navbar-nav ms-auto flex-grow-1">
+            <li class="nav-item">
+              <a class="nav-link logoutLink" href="/">Home</a>
+            </li>           
+            <!--Status-->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" style="width: 100px;" href="#" id="lblStatusDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Status <div id="overallStatusIndicator" class="status-circle status-unknown"></div>
+              </a>
+              <div class="dropdown-menu" aria-labelledby="lblStatusDropdown" id="statusDropdown">
+                {% for system in systems %}
+                {# Set href to point at a details page when you make it#}  
+                <a class="dropdown-item" href="#"
+                    data-bs-toggle="modal" 
+                    data-bs-target="#systemStatusModal"
+                    data-system= {{system.installation_id}} 
+                >{{ system.location }}: <div id="StatusIndicator{{system.installation_id}}" 
+                                                                              data-system= {{system.installation_id}} 
+                                                                              class="status-circle-small status-unknown"
+                                                                              ></div> </a>
+                  
+                {% endfor %}
+                <div class="dropdown-divider"></div>
+                <span class="dropdown-item userDetailsFont">
+                  Version: {{version}} 
+                </span>
+              </div>
+            </li>
+          </ul>
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item p-3">
+              <span id="spTime" class="navbar-text"></span>               
+          <li class="nav-item p-3">
+            <span class="navbar-text userDetailsFont">
+              You are currently logged in as {{username}}
+            </span>
+          </li>
+          <li class="nav-item p-3">
+            <a class="nav-link logoutLink" href="/logout" style="display: inline">logout</a>
+          </li>
+        </ul> 
+        </div>
+      </nav>
+{% block authorized_content %}{% endblock %}
+<!-- System Status modal -->
+<!-- Modal -->
+<div class="modal fade" id="systemStatusModal" tabindex="-1" aria-labelledby="systemStatusModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="systemStatusModalLabel"></h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="systemStatusDetails">
+        <h5 id="txtNoHeartBeat" class="collapse" >No heart beat for system: <span id="systemIDNoHB">1</span> </h5>
+       <table id="tblHeartBeatData" class="heartbeatoutter collapse">
+        <caption id="capHeartBeatTable"></caption>
+        <tr>
+          <th id="lblHeartbeatTime">Heartbeat time:</th>  
+          <td id="tdHeartTime"></td>
+        </tr>
+        <tr>
+          <th> Cameras </th>
+          <td id="tdCameras"> 
+            <table id="tblCam" class="camsubtable">
+              <thead >
+              <tr id="camHeaderRow"><th>ID</th><th>Tempurature</th></tr>
+              </thead>
+              <tbody>
+              </tbody>  
+            </table>
+          </td>
+        </tr>
+
+       </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>        
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block afterbs %}
+  <script type="text/javascript" src='/static/scripts/systemStatus.js' ></script>
+  {% block page_scripts %} {% endblock %}
+{% endblock %}

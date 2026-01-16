@@ -1,0 +1,67 @@
+[tool.poetry]
+name = "eurotunnel_web"
+version = "1.0.0.12"
+description = "Display data from the eurotunnel spring monitoring system aka VICORE"
+authors = ["Chris Morris <frontend@morrisdigital.co.uk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.13"
+blinker = "1.6.3"
+gunicorn = "*"
+Flask = ">3"
+click = "^8.1.7"
+bcrypt = "^4.1.2"
+SQLAlchemy = "^2.0.29"
+psycopg-binary = "^3.1.18"
+redis = "*"
+pydantic = "*"
+pytz = "*"
+loguru = "*"
+eurotunnel_datamodel = {path = "../eurotunnel_datamodel", optional = true}
+
+[tool.poetry.extras]
+datamodel = ["eurotunnel_datamodel"]
+
+[tool.poetry.dev-dependencies]
+# For running tests
+pytest = "*"
+# For timing out long-running (blocked) tests
+pytest-timeout = ">=2.1.0"
+# For reporting test coverage
+coverage = ">=7.2.7"
+#SO I can set env vars
+pytest-env = "*"
+#For creating temp dirs to handle test datamodels
+pytest-datadir = "*"
+
+# For generating documentation
+mkdocs = ">=1.4.3"
+# For theming the documentation
+mkdocs-material = ">=9.1.16"
+# For providing test coverage within the documentation
+mkdocs-coverage = ">=0.2.7"
+# For generating Python source code documentation
+mkdocstrings = {version = ">=0.22.0", extras = ["python"]}
+# For automatically generating API documentation
+mkdocs-gen-files = ">=0.5.0"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+    
+]
+
+[tool.pytest_env]
+DB_HOST = "localhost"
+DB_PORT = "5432"
+DB = "euro_tunnel_dev"
+DB_USER = "test_user"
+DB_PASSWORD = "GattoNero"
+DB_DEBUG = "True"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

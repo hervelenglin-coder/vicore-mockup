@@ -1,0 +1,71 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Flask - frontend",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "./eurotunnel_web/app.py",
+                "FLASK_DEBUG": "1",
+                "DB_HOST":"localhost",
+                "DB_PORT":"5432",
+                "DB":"euro_tunnel_prod",
+                "DB_USER":"euro_tunnel_website",
+                "DB_PASSWORD":"B0risBuggersBoys",
+                "REDIS_HOST":"localhost",
+                "WHEEL_IMG_DIR":"/mnt/vision/outgoing"
+                //"DB_PASSWORD":"propane£$nightmare"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload",
+                "--port",
+                "5001"
+            ],
+            "jinja": true,
+            "autoStartBrowser": true
+        },
+        {
+            "name": "Python: Filewatcher Module",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "eurotunnelvision.FileWatcher",
+            "env": {
+                "POSTGRES_DATA_DIRECTORY": "d:\\tmp\\testdb",
+                "INCOMING_FILE_DIRECTORY": "d:\\tmp\\incoming",
+                "OUTGOING_FILE_DIRECTORY": "d:\\tmp\\outgoing",
+                "DB_HOST": "localhost",
+                "DB_PORT": "5432",
+                "DB": "euro_tunnel_prod",
+                "DB_USER": "euro_tunnel_writer",
+                "DB_PASSWORD": "CatchTh3Spr1ng"
+            }
+        },
+        {
+            "name": "Reprocess Module",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "eurotunnelvision.reprocess_run",
+            "env": {
+                "POSTGRES_DATA_DIRECTORY": "d:\\tmp\\testdb",
+                "INCOMING_FILE_DIRECTORY": "d:\\tmp\\incoming",
+                "OUTGOING_FILE_DIRECTORY": "d:\\tmp\\outgoing",
+                "DB_HOST": "localhost",
+                "DB_PORT": "5432",
+                "DB": "euro_tunnel_prod",
+                "DB_USER": "euro_tunnel_writer",
+                "DB_PASSWORD": "CatchTh3Spr1ng"
+            }
+        },
+        {
+            "name": "Python: CurrentFile",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}"
+        }        
+    ]
+}

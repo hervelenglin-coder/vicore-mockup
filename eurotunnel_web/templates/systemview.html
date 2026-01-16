@@ -1,0 +1,269 @@
+{% extends 'authorised_users_base.html' %}
+
+
+    {% block title %} System View {% endblock %}
+
+
+
+    {% block authorized_content %}
+   
+<div id="app">   
+    {% include "vue_error_alert.html" %} 
+    <div style="height: 50%">
+
+        <!-- DIV CONTAINING Train Passes and controls -->
+        <div id="tplistOutter">
+            <!-- LIST CONTAINING TRAIN PASSES -->
+            <div id="tplist">
+                <div class="install"  v-for="system in installations" v-if="installations" 
+                v-on:scrollend="handleTPScroll"
+                :data-install-id="system.installation_id">
+                    <h1 style="text-align: center">[[ system.location ]] </h1>
+                    <div v-for="tp in system.train_passes" style="text-align: center;" v-if="installations">
+                        <center style="padding: 10px 0 0 0">
+                            <div v-on:click=" show_train_pass(tp['train_pass_id']) "
+                            :class="[ 'trainPassItem', (tp['conf_code'] >= 0 && tp['conf_code'] < 6) ? 'tp-col-' + tp['conf_code'] : '',tp['time_checked'] ? 'checked-ok' : '' ]"
+                            
+                            :data-tpid="tp['train_pass_id']">
+                                <a>[[ tp['disp_name_short']  ]]</a><!-- :style="if(tp['time_checked']) 'background-color: white' "-->
+                            </div>
+                        </center>
+                    </div>  
+                 </div>             
+            </div>
+             <button id="btnLoadMore" type="button" class="btn btn-primary"  v-on:click="fetchMoreTrainPasses(100);">Load More Passes</button> 
+        </div>
+       
+
+        <div style="display: inline-block;width: 5%">
+            <div style="background-color: rgba(50,50,50,0.5);width: 1px;height: 500px;"></div>
+        </div>
+
+        <!-- AREA DISPLAYING CAR ICON BOXES -->
+        <div style="display: inline-block;width: 70%;vertical-align: top">
+            <h2 style="text-align: center; margin: 0 0 0 -100px;padding: 20px 0 20px 0"> [[ current_train_pass['disp_name'] ]]</h2>
+            <div class="carriageItemBlock" v-for="(cc, index) in current_train_pass['cars'] " :key="index">
+                <div class="carriageItemOuter" v-on:click="show_car(current_train_pass['train_pass_id'], cc['car_num'])">
+                    <div class="carriageOrderNum">
+                        [[ cc['car_num'] ]]
+                    </div>
+                    <div class="carriageItemText" :class="[ cc['idtype'].startsWith('RFID:') ? 'citxt-rfid' : cc['idtype'].startsWith('Coupon:') ? 'citxt-rake' : '' ]">
+                        [[ cc['disp_name'] ]]
+                    </div>
+                    <div class="carriageItemIconDiv">
+                        <img :src="[ '/static/train/' + cc['car_icon'] +'.png' ]">
+                    </div>
+                    <div class="carriageItemColorPadDiv">
+                        <div class="carriageItemColorDiv"
+                        :class="get_car_confidence_class(cc)"></div>
+                    </div>
+                </div>
+                <div class="carriageJoin" v-if="index < current_train_pass['cars'].length - 1"></div>
+            </div>
+        </div>
+    </div>
+    <div style="background-color: rgba(50,50,50,0.5);width: 100%;height: 5px"></div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/confCodeLookup.js') }}"></script>
+<script type="text/javascript" src="/static/scripts/ethelper.js"></script>
+<script type="text/javascript">
+    var app = new Vue({
+        el: '#app',
+        delimiters: ["[[", "]]"],
+        data() {
+            return {
+                error_text: '',
+                current_train_pass: {},                
+                //prepopulating is just way quicker, because it doesn't have to redraw everything
+                installations: JSON.parse('{{ installations | tojson }}'),
+            }
+        },
+
+        async mounted() {       
+            if (!this.installations){
+                await this.get_train_passes();   
+            }
+            //Fetch installations from endpoint, start timer to re-fetch
+            const queryParams = new URLSearchParams(document.location.search);
+            const passed_tpid = queryParams.get('tpid');            
+            if (passed_tpid){
+                const current_tpid = parseInt(passed_tpid);
+                for (const system of this.installations){
+                    const selectedPass = system.train_passes.find((tp) => tp.train_pass_id === current_tpid);
+                    if(selectedPass){
+                        this.current_train_pass = selectedPass;
+                        break;
+                    }
+                }
+            }
+            
+            if(!this.current_train_pass.train_pass_id)
+            {
+                this.current_train_pass = this.installations[0].train_passes[0];
+            }
+            if(this.current_train_pass.train_pass_id)
+            {
+                this.show_train_pass(this.current_train_pass.train_pass_id);
+                highlightTP(this.current_train_pass.train_pass_id);
+            }
+        },
+
+        methods: {
+            handleTPScroll: function (evt){
+                
+                let distFromTop = evt.target.scrollTopMax - evt.target.scrollTop;
+                if (distFromTop < 20){
+                    console.time("Scroll handler trigger fetching more passes");
+                    install = evt.target.dataset.installId;                
+                    this.fetchMoreTrainPasses(25,install);
+                    console.timeEnd("Scroll handler trigger fetching more passes");
+                }
+                
+
+            },
+           async get_train_passes(){
+              try{
+                const response = await fetch('/get_train_passes');
+                if (!response.ok) {
+                    const errStr = `Response status: ${response.status}`;                        
+                    throw new Error(errStr);
+                }
+                const json = await response.json();
+                this.installations = json;
+
+              }  catch (error) {                        
+                        const errStr = `Failed fetching Train Passes: ${error.message}`;
+                        this.error_text = errStr;
+                        throw error;
+                    }
+            },
+            get_car_confidence_class(car){  
+                return confCodeLookup(car);
+                },
+                
+            getDateTimeOfLastPass(installation_id = null){
+                let dtLatest = new Date(0);
+                for(const system of this.installations){
+                    if( installation_id != null)
+                    {
+                        if (system.installation_id != installation_id)
+                            continue;
+                    }
+                    const lastPass = system.train_passes[system.train_passes.length - 1];
+                    if (lastPass){//if one system has no passes then this can be null
+                        const system_latest = new Date(lastPass['time_start']);
+                        if(system_latest > dtLatest){
+                            dtLatest = system_latest;
+                        }  
+                }                  
+                }
+                return dtLatest;
+            },
+            async  fetchMoreTrainPasses(nToFetch,installation_id = null) {                
+                const formatted_dt =  this.getDateTimeOfLastPass(installation_id).toISOString();                  
+                console.log("Load after: , called at" , formatted_dt);
+                console.time('load more passes');
+                let url = "/loadTrainPasses/" + formatted_dt;
+                if(nToFetch){
+                    url = url + "/" + nToFetch;
+                    if(installation_id)
+                        url = url + "/" + installation_id;
+                }
+                try {
+                const response = await fetch(url,{method: "POST"});
+                if (!response.ok) {
+                    const errStr = `Response status: ${response.status}`;                        
+                    throw new Error(errStr);
+                }
+            
+                const json = await response.json();                    
+                for(const incoming_system of json){                  
+                    const existing_system_idx = this.installations.findIndex((sys) => sys.installation_id == incoming_system.installation_id);                    
+                    incoming_system.train_passes.forEach((tp) => {
+                       
+                        //it's a smidge slower but it saves re adding existing passes, which 
+                        //did sometimes used to happen
+                        //so....this seems to work: they get added, but don't appear in the UI?!
+                        //it'll be a few days before you come back to this hopefully git will remind you this is where you were
+                        if(!this.installations[existing_system_idx].train_passes.some((t) => t.train_pass_id == tp.train_pass_id)){
+                            this.installations[existing_system_idx].train_passes.push(tp);
+                        }
+                    });
+                   
+                    console.timeEnd('load more passes');
+                }
+                this.$set (this.installations,'installations',this.installations);                                                  
+                } catch (error) {                        
+                    const errStr = `Failed fetching Train Passes: ${error.message}`;
+                    this.error_text = errStr;
+                    throw error;
+                }
+            },
+            
+
+            //Show all the cars from a specific train pass in the right-hand area of the page
+            //  Called when a train-pass is clicked in the left-hand list
+            async show_train_pass(number) {
+                try {
+                    if (!number)
+                    {
+                        const errStr = `Interal error: no train pass id provided`;                        
+                        throw new Error(errStr);
+                    }
+                    const url = `/getTrainPass/${number}`;
+                    const response = await fetch(url,
+                    {method: "POST"
+                });
+                    if (!response.ok) {
+                        const errStr = `Server detected problem with single train pass request: ${response.status}`;                        
+                        throw new Error(errStr);
+                    }
+                    else
+                    {
+                        const replyJson = await response.json();
+                        app.current_train_pass = replyJson;
+                        highlightTP(app.current_train_pass.train_pass_id);
+                        let searchParams = new URLSearchParams(document.location.search);
+                        searchParams.set('tpid',app.current_train_pass.train_pass_id);
+                        let current_url = new URL(document.location);
+                        current_url.search = searchParams;
+                        //Used to avoid triggering a reload, but to make the back button work as hoped for
+                        history.replaceState({}, "", current_url);
+
+
+                    }
+                }
+                catch (error) {                        
+                    const errStr = `Failed single train pass: ${error.message}`;
+                    this.error_text = errStr;
+                    throw error;
+                }                
+            },
+
+            //Open the car view page for a specific train-pass/car
+            //  Called when one of the car icons is clicked
+            show_car(train_pass_id, car_num) {
+                console.log(train_pass_id, car_num)
+                //Open the cars page for the clicked car
+                window.location.href = '/cars/' + train_pass_id + '/' + car_num
+            },
+        },
+
+    })
+
+
+    function highlightTP(tpid){
+        const train_passes = document.querySelectorAll("div.trainPassItem");
+        train_passes.forEach((tp)=> tp.classList.remove("trainPassItemSel") );
+        const toHightlight = document.querySelector(`[data-tpid="${tpid}"]`);
+        toHightlight.classList.add("trainPassItemSel");
+        toHightlight.scrollIntoView();
+        
+    }
+   
+    
+</script>
+
+{% endblock %}
+

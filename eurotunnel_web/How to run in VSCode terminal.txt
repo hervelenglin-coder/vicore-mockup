@@ -1,0 +1,21 @@
+How to run the Frontend locally from the VSCode terminal.
+
+Prerequisites:
+- A valid database running in Docker (e.g. Docker Desktop) on port 5432
+- A folder of wheel photos. Current default location is c:/Users/Graeme Yeo/Documents/ET Vision/eurotunnel_web/wheelimg  The default can be changed near the top of app.py, or set the proper environment variable WHEEL_IMG_DIR to your directory.
+
+WSL:
+You need to install Windows Subsystem for Linux (WSL)
+
+I installed Debian, but whatever.
+Install python3 on it with apt or equivalent.
+There are probably other packages, but I can't remember now.
+
+In VSCode:
+- Open the terminal (View > Terminal)
+- In the top right of the terminal, click the down arrow next to the "+" button and choose "Debian (WSL)" or whatever you installed.
+- Start a virtual environment by running "python3 -m venv .venv"
+- Then run "source .venv/bin/activate". You should get a (.venv) prefix to your command prompt.
+- Now "source .env" which will load the required environment variables. You may need to create .env as it is not in the git repo.
+- Now run the appication "python3 app.py"
+

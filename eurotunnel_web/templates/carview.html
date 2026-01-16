@@ -1,0 +1,681 @@
+{% extends 'authorised_users_base.html' %}
+    {% set page_title = 'System View' %}
+    {# Page title is reset when the data is loaded, in Vue #}
+    {% block title %} {{ page_title }} {% endblock %}
+
+    {% block page_extra_header%}
+
+    <script type="text/javascript">
+        {% include "templatedScripts/missingSprings.js" %} 
+        
+    </script>
+
+
+    {% endblock %}
+
+    {% block authorized_content %}
+<div id="app" class="container">
+    {% include "includes/y25_include.html" %}
+    {% include "includes/allotherbogies.html" %}
+    <!--Modal that shows all the available images if a spring is not detected -->
+    <div class="modal fade" id="springAWOLModal" tabindex="-1" aria-labelledby="springAWOLModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="springAWOLModalLabel">Confirm Spring Status</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row" id="springAWOLBody">
+                <!--All the available images are displayed here-->
+                <!-- If in the future we're asked to make the images with springs in selectable, the index will come in handy
+                 For now though I'm avoiding adding things we weren't asked for missing-spring-img-->
+                <img v-for= "(img,idx) in this.possible_spring_images" :src="get_wheel_img_path(img)" :alt="idx" class="awol-img col-xl-4 row-xl-6">
+               
+                </div>
+
+                <div class="modal-footer row">                    
+                    <button type="button" class="btn btn-success col-sm" data-bs-dismiss="modal" v-on:click="send_status_confirmation(true)">Spring Present</button>
+                    <button type="button" class="btn btn-danger col-sm" data-bs-dismiss="modal" v-on:click="send_status_confirmation(false)">Spring Missing</button>
+                    <button type="button" class="btn btn-secondary col-sm" data-bs-dismiss="modal">Unsure - Close</button>        
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include "vue_error_alert.html" %} 
+    <!-- alert for information only-->
+    <div v-if="info_text" class="alert alert-info alert-dismissible fade show alert-fixed" 
+        role="alert"
+    >
+        [[ info_text  ]] 
+        <buton type="button" class="btn-close" data-dismiss="alert" aria-label="Close" v-on:click="info_text=null"></button>          
+    </div>
+    <div>
+        <!-- LEFT-HAND LIST CONTAINING CAR ICONS -->
+        <div style="display: inline-block; width: 15%; vertical-align: top; padding: 10px 0 0 0; max-height: 100vh; overflow: auto;" id="carridgeItemsContainer">
+            <h1 style="text-align: center; font-size: 14pt;">Véhicules<br>du train</h1>
+            <div class="carriageItemBlock-columnar" v-for="(cc, index) in train_pass['cars'] " :key="index" >
+                <div class="carriageItemOuter" v-on:click="load_car(cc['car_num'])"
+                :data-car-num="cc['car_num'] "
+		        :class="cc['car_num'] == current_car['car_num'] ? 'ci-sel' : ''">
+                    <div class="carriageOrderNum">
+                        [[ cc['car_num'] ]]
+                    </div>
+                    <div class="carriageItemText" :class="[ cc['idtype'].startsWith('RFID:') ? 'citxt-rfid' : cc['idtype'].startsWith('Coupon:') ? 'citxt-rake' : '' ]">
+                        [[ cc['disp_name'] ]]
+                    </div>
+                    <div class="carriageItemIconDiv">
+                        <img :src="[ '/static/train/' + cc['car_icon'] +'.png' ]">
+                    </div>
+                    <div class="carriageItemColorPadDiv">
+                        <div class="carriageItemColorDiv"
+                        :class="get_car_confidence_class(cc)"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: inline-block;width: 2%">
+            <div style="background-color: #eeeeee;width: 1px;height: 100vh;"></div>
+        </div>
+
+        <div style="display: inline-block;width: 82%;vertical-align: top">
+            <div style="padding: 0px 0 0 0 ">
+                <!-- NAME OF THE CURRENT TRAIN PASS ABOVE THE MAIN PHOTO -->
+                <div style="height: 90px;">
+                    <h1 style="margin:0; padding: 30px 0 0 180px;">[[ train_pass['disp_name'] ]]</h1>
+                </div>
+                <div style="display: inline-block;width: 50%;padding: 0 0 0 0 ;vertical-align: top">
+                    
+                    <!-- THE MAIN PHOTO (OF THE CURRENT WHEEL) -->
+                    <div style="width: 100%;">
+                        <img id="springPhoto" class="main"
+                        :src="wheel_img"      
+                        >
+                    </div>
+                 
+                    <!--  BUTTONS BELOW THE MAIN PHOTO -->
+                    <div style="width: 100%; text-align: center;" class="vstack">    
+                        <div>
+                            <label class="imgCntlLabels" for="contrastSlider"> Contrast: &#x25D1;</label>
+                            <input id="contrastSlider" type="range" min="50" max="300" value="100" v-on:change="update_contrast()" v-model="contrast">
+                        </div>
+                        <div>
+                            <label class="imgCntlLabels" for="brightnessSlider"> Brightness: &#x1F506;</label>
+                            <input id="brightnessSlider" type="range" min="50" max="300" value="100" v-on:change="update_brightness()" v-model="brightness"/>
+                        </div>
+                        <!-- PREV / NEXT Buttons -->
+                        <div class="bellowPictureButtons">
+                            <button id="btnPrev" 
+                                    type="button" 
+                                    class="btn btn-info springNavButton  [[ springN <= 0 ? 'disabled' ]]"
+                                    v-on:click="goPrev"
+                            />
+                            &#x2190 Previous
+                            </button>
+                            <button id="btnNext" 
+                                    type="button" 
+                                    class="btn btn-info springNavButton [[ springN >= current_car.springs.length -1; ? 'disabled' ]]"
+                                    v-on:click="goNext"
+                            />
+                            Next &#x2192
+                            </button>
+                        </div>
+                    <div>
+                        <!-- MISSING SPRING HANDLING -->
+                        {% if show_confirm %}                                    
+                            <button id="btnConfirmMissing" 
+                                    type="button" 
+                                    class="btn btn-danger"
+                                    v-if="current_spring_awol && (!this.human_has_confirmed() )"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#springAWOLModal"
+                            />
+                                Confirm spring missing
+                            </button>
+                        </div>
+                        <div>
+                            <span id="confirmText"
+                                v-if="this.human_has_confirmed()">
+                                [[current_spring_obj.human_confirm ? 'Spring Confirmed Present' : 'Spring Confirmed Missing' ]]
+                            </span>   
+                        </div>
+                        {% endif %}
+                            
+                            <!--Test button - we don't need it
+                            but I have it because it'll be handy again
+                            <button id="btnTest" 
+                            type="button" 
+                            class="btn"
+                            v-on:click="info_text='testing123'"> 
+                            
+                        test</button>-->
+                                           
+                       
+                    
+                    </div>
+                </div>
+
+                <!-- PLAN-VIEW OF THE TRAIN, USED TO SELECT WHICH WHEEL TO LOOK AT -->
+                <div id="wagonBox"class="wagon-box">
+                    <!--Top label-->
+                    <div class="bglabel bglead">[[ get_car_end_label(true) ]]</div>
+                    <!--middle label (gets sshuffled is JS later)-->
+                    <div id="carLabel" class="carlabel">[[ '[' + current_car['car_num'] + ']' ]] <br> [[ current_car['disp_name'] ]]</div>
+                    <!-- Draw a bogie rectangle for each bogie on the car -->
+                    <div v-for="bg in num_bogies" :key="bg"
+                    class="bogie-box" 
+                    :class="{ 'bogie-box-many': (num_bogies > 2) }">
+                        <!-- import the bogie SVG -->
+                        <svg viewBox="0 0 100 137" version="2.0" >
+                            <!--Bogie offset tells you the number of the first 
+                            axle on the bogie-->
+                            <use :href="'#' + current_car['bogie_svg']" :data-bogie-offset="(bg * current_car['nax'])-1" :data-bogie-id="bg" />
+                          </svg>
+                    </div>
+                    <!--Bottom label-->
+                    <div class="bglabel bgtrail">[[ get_car_end_label(false) ]]</div>
+                </div>
+
+                
+                <div style="display: inline-block;width: 20%;vertical-align: top;">                   
+     
+                    <!-- 'BACK' BUTTON -->
+                    <div v-on:click="display_train_pass_view" style="padding: 50px 0 0 50px">
+                        <svg t="1697123432067" class="backicon" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" p-id="1452" width="100" height="100">
+                            <path d="M628.011 271.424H451.426V127.982L63.981 321.702l387.445 193.725V372.314h191.205c151.355 0 227.01 63.39 227.01 190.176 0 131.172-78.173 196.74-234.562 196.74H189.141v100.89h450.474c213.211 0 319.815-96.014 319.815-288.043 0-200.429-110.463-300.653-331.419-300.653z m0 0"
+                                  p-id="1453" fill="#13227a"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/ethelper.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='scripts/confCodeLookup.js') }}"></script>
+<script >
+    
+
+    const CIRCLE_NORMAL_SIZE_PX = 6;
+    const CIRCLE_SELECTED_SIZE_PX = 8;
+    const MAX_CONF_CODE_FOR_OK =2;
+    
+
+     var app = new Vue({
+          el: '#app',
+        delimiters: ["[[", "]]"],
+        data() {
+            initial_car =  JSON.parse('{{ current_car | tojson }}');
+            return {
+                train_pass: JSON.parse('{{ train_pass | tojson }}'),
+                current_car: initial_car,   
+                current_spring: 1,
+                //I am an object representing the currently displayed spring
+                current_spring_obj: initial_car.springs[0],                
+                wheels_per_bg: 4,
+                num_bogies: 2,
+                wheel_img: '',                                               
+                current_spring_awol: false,
+                //I am expecting this to be an array of strings, if set
+                possible_spring_images: [],   
+                error_text: null,  
+                info_text: null, 
+                car_axle_selected: -1,
+                brightness: 100,
+                contrast: 100 ,
+                goto_last_spring: false,
+             
+            }
+        },        
+
+        mounted() {
+            this.spring_id = -1;
+            this.update_displayed_car();  
+            //Add the hander that tracks which bogie was clicked on
+            const bogies = document.querySelectorAll('[data-bogie-offset]');
+            for (const bogie of bogies){
+              bogie.addEventListener("click", (e) =>bogieClick(e));
+            }                 
+        },
+        watch: {
+            $route: {
+                immediate: true,
+                handler(to, from) {        
+                    //the title base comes from jinja.
+                    //I realise now I could actually get jinja to do the entire thing, but this works             
+                    document.title =  '{{ page_title }} ' + this.train_pass['disp_name'] ?? '';                                       
+                }
+            },
+        },
+       
+
+        methods: {
+            goNext(){     
+                const nSprings = this.current_car.springs.length; 
+                console.log(`Go next, from ${this.current_spring}`);
+                if(this.current_spring < (nSprings-1))
+                {                   
+                    this.current_spring++;
+                    this.displayAndUpdate();
+                } 
+                else
+                {
+                    //We're off the end of this car, go to the next car
+                    const min_order = this.current_car.car_num;
+                    const nextCar = this.train_pass.cars.find((car) => car.car_num > min_order);
+                    if(!nextCar)
+                    {
+                        this.info_text = "No further cars";
+                        return;
+                    }                    
+                    this.current_spring = 0;                    
+                    this.load_car(nextCar.car_num);
+                }             
+            },
+            goPrev(){                   
+                console.debug('Go prev from' ,this.current_spring);
+                if(this.current_spring > 0)
+                {                   
+                    this.current_spring--;
+                    this.displayAndUpdate();
+                }
+                else
+                {
+                    //We're off the start of this car, go to the previous car
+                    const max_order = this.current_car.car_num;
+                    const nextCar = this.train_pass.cars.findLast((car) => car.car_num < max_order);
+                    if(!nextCar)
+                    {
+                        this.info_text = "We're on the first car";
+                        return;
+                    }                                        
+                    this.goto_last_spring = true;                    
+                    this.load_car(nextCar.car_num);
+                }                  
+            },
+            displayAndUpdate(){
+                clearAllSelCircles();
+                resetLast();
+                const spring_obj = this.current_car.springs[this.current_spring]
+                if(!spring_obj)
+                {
+                    console.error("Could not find spring object for idx,",this.current_spring);
+                }
+                this.show_spring_obj(spring_obj);
+                const axPerBogie = this.wheels_per_bg / 2;    
+                const {bogie, circle} = get_bogie_and_circle(spring_obj,axPerBogie);
+                const bogieEL = document.querySelector(`[data-bogie-id="${bogie}"]`);
+                const attrib = `--extra-sel-${circle}-opacity`;
+                bogieEL.style.setProperty(attrib,'1');
+            },
+            human_has_confirmed(){               
+                if(this.current_spring_obj == null)
+                    return false;
+                return this.current_spring_obj.has_human_confirm;
+            },
+            reset_image() {
+                this.contrast = this.brightness = 100;
+                document.getElementById('springPhoto').style.filter = 'none';
+            },
+            update_contrast(){
+                document.getElementById('springPhoto').style.filter=`contrast(${this.contrast}%)`;
+            },
+
+            update_brightness(){
+                document.getElementById('springPhoto').style.filter=`brightness(${this.brightness}%)`;
+            },
+           
+            load_car(n) {
+                //Generate an HTTP POST request to get the Car data from the selected train pass (see /static/ethelper.js)
+                ETHelper.request_post_json('/getCar/' + this.train_pass['train_pass_id'] + '/' + n, '', load_car_cb);
+            },
+            get_car_confidence_class(car){  
+                    return confCodeLookup(car);
+            },
+            test_err(){
+                    const err = `this is a test error, not a real problem`;
+                    this.error_text = err;
+                    throw new Error(err); 
+            },
+            async send_status_confirmation(spring_present){
+                if(this.spring_id < 0)
+                {
+                    const err = `invalid spring ID - can't update status`;
+                    this.error_text = err;
+                    throw new Error(err); 
+                }
+                const url_str = `/put_confirmation_status/${this.spring_id}/${spring_present}`  
+                const put_request = new Request(url_str, {
+                    method: "PUT",                    
+                  });
+                  try{
+                        const response = await fetch(put_request);                  
+                        if (!response.ok) {
+                            var err =`Failed updating status: ${response.status}`; 
+                            //The UI shouldn't be allowing this                   
+                            if (response.status == 409){
+                                err = "This spring status has already been confirmed. It can not be ammended";
+                            }
+                            throw new Error(err);                     
+                        }
+                        //this needs to be updated to update control visibility
+                        this.current_spring_obj.human_confirm = spring_present;
+                        this.current_spring_obj.has_human_confirm = true;                        
+                        if(spring_present){
+                            this.current_spring_obj.conf_code = 0;
+                            const json = await response.json();
+                            const axPerBogie = this.wheels_per_bg / 2; 
+                            this.update_single_spring(axPerBogie,this.current_spring_obj)
+                            const number_remaining = json.n_remaining;                            
+                            info = "Spring confirmed as present.";
+                            if (number_remaining > 0)
+                                info = `${info} ${number_remaining} springs still require confirmation or are missing`;
+                            else
+                                info = `${info} All springs are confirmed as present.`;
+                            this.info_text = info;
+                        }                
+                        else{
+                            this.info_text = "Spring marked as absent";
+                        }
+                    }
+                    catch(err)
+                    {                      
+                        this.error_text = err.message;
+                        throw err;
+                    }
+                   
+            },
+
+            //Change which car is shown in the main area of the page
+            update_displayed_car() {
+                //remove the selection circle that applied to the previous car
+                resetLast();
+                console.log("Update displayed car. Current car idx:",this.current_car);
+                car = this.current_car;
+                if (car != null)
+                {
+                    if (!this.goto_last_spring)
+                        this.current_spring = 0;
+                    else
+                    {
+                        this.current_spring = car.springs.length-1;
+                        this.goto_last_spring = false;
+                    }
+                    this.wheels_per_bg = car['nax'] * 2;
+                    this.num_bogies = car['nbg'];
+                    //If this has a value a human has already set the status
+                }
+                else
+                {
+                    this.wheels_per_bg = 4;
+                    this.num_bogies = 2;
+                }          
+                if(car != null){                
+                    if (car.springs_checked)
+                        this.update_all_spring_conf(car);               
+                }
+                const spring_obj = car.springs[this.current_spring];
+                if(!spring_obj)
+                {
+                    console.error("Trying and failing to load spring",this.current_spring);
+                }
+                this.show_spring_obj(spring_obj);                
+                this.shuffle_label();   
+                //Updates the selected spring to match the spring index                     
+                this.displayAndUpdate();
+                //scroll the selected wagon into view - relevent when using prev/next Buttons
+                const wagonOutterEL = document.querySelector(`[data-car-num="${car.car_num}"]`);                               
+                if(wagonOutterEL)
+                {
+                    const wagonBoundingRect = wagonOutterEL.getBoundingClientRect();     
+                    const container = document.getElementById("carridgeItemsContainer");   
+                    //console.debug("bounds top:",wagonBoundingRect.top );           
+                    if((wagonBoundingRect.top < 0 ) ||
+                    (wagonBoundingRect.top > container.clientHeight) 
+                    )
+                    //only scroll if not visble
+                    wagonOutterEL.scrollIntoView({ behavior: "smooth"});                                        
+                }
+               
+            },              
+            update_all_spring_conf(car){    
+                //2 wheels per axle seems a pretty safe assemption
+                const axPerBogie = this.wheels_per_bg / 2;    
+                for (const spring_obj of car.springs)  
+                    this.update_single_spring(axPerBogie,spring_obj);
+            },
+            update_single_spring(axPerBogie,spring_obj){
+                          
+                    const {bogie, circle} = get_bogie_and_circle(spring_obj,axPerBogie);
+                    //The bg id is 1 based somehow
+                    const bogieEL = document.querySelector(`[data-bogie-id="${bogie}"`);
+                    if (!bogieEL)
+                        throw `Bogie not found ${bogieN}` ;
+                    var colName = '';
+                    switch(parseInt(spring_obj.conf_code)){
+                        case 0:
+                            colName= '--confirmed-okay-col';
+                            break;
+                        case 1:                        
+                            colName= '--okay-col';
+                            break;
+                        case 2:
+                            colName = '--unsure-col';
+                            break;
+                        case 3:
+                            colName = '--bad-col';
+                            break;
+                        default:
+                            throw `invalid conf_code ${spring_obj.conf_code}`;
+                    }
+                    const propName = `--spring${circle}col`;
+                    const propValue = `var(${colName})`
+                    bogieEL.style.setProperty(propName,propValue);
+                },
+                        //This exists because I can't work how to get it right in pure vue
+            //I think there's a solution with templates
+            shuffle_label()
+            {
+                const carLabel = document.getElementById("carLabel");
+                const wagonBox = document.getElementById("wagonBox");
+                //Whilst there's mostly 2 bogies we don't actually know that
+                const bogies = wagonBox.querySelectorAll('.bogie-box');
+                const lastBogie = bogies[bogies.length- 1];
+                wagonBox.insertBefore(carLabel,lastBogie);
+            },
+
+            show_spring(axle_n,camera){               
+                const spring_obj = this.current_car.springs.find((spring) => spring.ax == axle_n && spring.pos == camera);
+                const axPerBogie = this.wheels_per_bg / 2; 
+                const {bogie, circle} = get_bogie_and_circle(spring_obj,axPerBogie);
+                const bogie_offset = (this.wheels_per_bg * 2) * (bogie -1); //should be 0 for the first one
+                this.current_spring = bogie_offset + circle;
+                if(spring_obj){
+                    this.show_spring_obj(spring_obj);
+                }
+            },
+            show_spring_obj(spring_obj)    {
+                this.reset_image();
+                this.current_spring_obj = spring_obj;
+                this.wheel_img = this.get_wheel_img_from_object(spring_obj);
+                const conf_code = spring_obj.conf_code;
+                this.current_spring_awol = (conf_code > MAX_CONF_CODE_FOR_OK);                
+                if(this.current_spring_awol){
+                    this.spring_id = spring_obj['spring_id'];
+                    this.get_missing_spring_images(this.spring_id) ;                      
+                }
+                else
+                {
+                    this.possible_spring_images = [];
+                }
+            },
+             //Get the image path of the photo of the specified wheel, using a pre-fetched object
+            get_wheel_img_from_object(spring_obj) {
+                const img = spring_obj['img'];
+                return get_wheel_img_path(img);
+            },
+
+            get_car_end_label(leading) {
+                en = 'inconnu'
+                if(this.current_car['lead'] == 1) //End 1 leading - forwards direction
+                    en = leading ? '1' : '2'
+                else if(this.current_car['lead'] == 2) //End 2 leading - backwards direction
+                    en = leading ? '2' : '1'
+                return 'Bout ' + en
+            },
+
+            //Go back to the system view page
+            display_train_pass_view() {                    
+                    const train_pass_url = new URL("./listpasses",window.location.origin)
+                    train_pass_url.searchParams.append('tpid',this.train_pass.train_pass_id);
+                    window.location.href = train_pass_url;
+                        
+            },
+            
+            //populate the images in the missing spring modal
+            async get_missing_spring_images(spring_location_id){
+                const response = await fetch(`/get_all_images_for_spring/${spring_location_id}`);
+                if (!response.ok) {
+                    this.possible_spring_images = [];
+                    const err = `Getting all image for spring, response status: ${response.status}`;
+                    this.error_text = err;
+                    throw new Error(err);
+                  }
+                const json = await response.json();
+                this.possible_spring_images = json;
+            }
+
+        },
+    })
+
+
+    //Callback to change which car is displayed in the main area of this page (i.e. photos + car schematic)
+    // The callback is triggered from the JS code when it receives a reply from the HTTP POST request
+    function load_car_cb(replyJson) {
+        app.current_car = JSON.parse(replyJson);
+        app.update_displayed_car();
+    }
+
+//returns int.
+// I've added data properies to the statusCircles
+// with which spring number they are.
+//The other option being reencoding it as a massive switch statement
+//with inevitable errors
+function getCircleNumber(ax,pos){  
+    //Note this is the template emlemnt, not the displayed element
+    //if it was this easy I wouldn't need quite a lot of code..
+    try
+    {
+    const circle = document.querySelector(`circle[data-axle="${ax}"][data-camera="${pos}"]`);
+    return parseInt(circle.dataset.springN);
+    }
+    catch(err)
+    {
+        console.error(`ax ${ax} pos ${pos} caused: ${err}`);
+        throw err;
+    }
+}
+
+/*
+This click handler is called from 
+within the bogie svg and handles the spring selection.
+This needs to be at page level where both svgs are visible
+(and because I can't make it work within the SVG)
+*/
+var lastTarget = null;
+var bogieAlxe = 0;
+var springNClicked = 0;
+
+
+var camera = "";
+function clickHandler(e){
+  
+    const target = e.target;
+    try{
+       resetLast();
+        target.setAttribute("r",CIRCLE_SELECTED_SIZE_PX);
+        target.classList.add('spring-sel');
+        bogieAlxe = parseInt(target.dataset.axle);
+        camera = target.dataset.camera ;
+        springNClicked = target.dataset.springN;
+        console.debug("spring click: axle, camera, spring",bogieAlxe,camera,springNClicked);
+        
+    }
+    finally{
+        lastTarget = target;
+    }
+ }
+
+ function get_bogie_and_circle(spring_obj,axPerBogie)
+    {
+       /*
+   Takes a spring as an object and works out which circle
+   on the SVG needs to he highlighted / coloured to refer to it 
+   */            
+    //bogie number is 1 based
+    const bogieN = Math.round(spring_obj.ax / axPerBogie );                                        
+    //also 1 based
+    //hardcoded axled per bogie ####TODO
+    //doing it seemingly "right" wasn't working
+    const bogie_axle = (spring_obj.ax % 2) ? 1 : 2      ;           
+    const springN =  getCircleNumber(bogie_axle,spring_obj.pos);
+    console.debug("Bogie, axle, pos,spring",bogieN,bogie_axle,spring_obj.pos,springN);
+    res = {
+        bogie: bogieN,
+        circle: springN,
+    }
+    return res;
+
+    }
+
+ function resetLast()
+ {
+    if(lastTarget != null)
+    {
+        lastTarget.classList.remove('spring-sel');
+        lastTarget.setAttribute("r",CIRCLE_NORMAL_SIZE_PX);
+    }
+ }
+
+ /*
+ Also related to spring selection, but is attached in the Vue mounted function
+ this gets hit second, after the clickHandler
+ */
+ function bogieClick(e){
+    this.app.car_axle_selected = parseInt(e.target.dataset.bogieOffset)  + (bogieAlxe-1);
+    this.app.show_spring( this.app.car_axle_selected,camera);
+    //I only need any of this shite because fucking Chromium doesn't show changes to the css
+    //inside the SVG template and Eurotunnel use edge
+    clearAllSelCircles();
+    const attrib = `--extra-sel-${springNClicked}-opacity`;
+    e.target.style.setProperty(attrib,'1');
+   }
+
+   function clearAllSelCircles(){
+    const bogies = document.querySelectorAll('[data-bogie-id]');
+   //   bogies.forEach((bogie) => bogie.style.setProperty('--extra-sel-1-vis','none'));
+
+    bogies.forEach((bogie) => clearBogieCircles(bogie));
+
+   }
+
+   function clearBogieCircles(bg){
+    for(let i = 1; i <= 8; i++ )
+    {
+        const attrib = `--extra-sel-${i}-opacity`;
+        bg.style.setProperty(attrib,'0');
+    }
+
+   }
+
+
+
+
+
+</script>
+
+
+
+{% endblock %}

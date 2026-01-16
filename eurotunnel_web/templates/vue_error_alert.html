@@ -1,0 +1,10 @@
+<!-- alert for when something hasn't worked
+I need an error_text attribute in the Vue object to work
+Also, I strongly suspect this isn't how you're supposed to use Vue 
+-->
+<div v-if="error_text" class="alert alert-danger alert-dismissible fade show alert-fixed" 
+role="alert"
+>
+[[ error_text  ]] 
+<buton type="button" class="btn-close" data-dismiss="alert" aria-label="Close" v-on:click="error_text=null"></button>          
+</div>

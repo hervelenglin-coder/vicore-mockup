@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block extracss %}
+<style>
+    el-button {
+            padding: 3px;
+        }
+
+        .login-control{
+          
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            
+        }
+        .login-control-outter
+        {
+            display: inline-block; 
+            vertical-align: middle;
+        }
+        /* Add a background color when the inputs get focus */
+        .login-control:focus {
+            background-color: #ddd;
+            outline: none;
+        }
+        .login-label{
+            display: inline-block;
+            vertical-align: middle;
+            text-align: right;
+        }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="app">
+    <div style="display: inline-block; width: 35%; height: 100vh; background-image: url(static/img/goodspring.jpg); background-size: auto 100%;">
+        <div style="text-align: center">
+            <h1 style="color: white;font-size: 60px;padding: 200px 0 0 0 ">VICORE</h1>
+        </div>
+    </div>
+
+    <div style="display: inline-block;width: 60%;vertical-align: top">
+
+
+        <div style="margin: 0 auto;text-align: center">
+            <div style="padding: 200px 0 0 0 "></div>
+
+            <div style="padding: 2px 0 0 0">
+                <h1>{% block title %}Login{% endblock %}</h1>
+            </div>
+            <div class="container">
+                <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="login-label">
+                        <label  for="txtusername" class="control-label">Username</label> 
+                    </div>
+                    <div class="col-lg-4 login-control-outter">            
+                        <el-input v-model="username" placeholder="Enter username" id="txtusername"></el-input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="login-label">
+                        <label for="txtpassword" class="control-label">Password</label>
+                    </div>
+                    <div class="col-lg-4 login-control-outter">
+                        <el-input type="password" v-model="password" id="txtpassword"
+                                placeholder="Enter password"></el-input>              
+                    </div>
+                </div>
+                    <div class="form-group">
+                        <div class="col-lg-offset-2 col-lg-10">
+                            <el-button  v-on:click="login" type="primary" class="col-lg-4 btn btn-primary">Login</el-button>                     
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div>                
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<!-- Login failed modal -->
+<div class="modal fade" id="loginFailed" tabindex="-1" role="dialog" aria-labelledby="loginFailedLabel" aria-hidden="true" style="padding: 10%;">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="loginFailedLabel">Login Failed</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Username or Password were not accurate.<br/>
+          Should you require access to this system please contact Eurotunnel.
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Dismiss</button>         
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}
+{% block afterbs %}
+<script>
+    function showLoginFailed()
+    {
+        let loginFailedModal = new bootstrap.Modal(document.getElementById('loginFailed'));
+        loginFailedModal.show();
+    }
+    
+
+    var app = new Vue({
+        el: '#app',
+        delimiters: ["[[", "]]"],
+        data() {
+            return {
+                username: '',
+                password: '',
+                register_show: false
+            }
+        },
+
+        methods: {
+            handleClose(done) {
+                this.$confirm('Confirm Close?', 'Warning', {
+                    confirmButtonText: 'OK',
+                    cancelButtonText: 'Cancel',
+                    type: 'warning'
+                }).then(() => {
+                    done();
+                })
+                    .catch(_ => {
+                    });
+            },          
+            
+
+
+            login() {
+                axios.post('/login', {
+                    'password': this.password,
+                    'username': this.username,
+                })
+                    .then(res => {
+                        if (res.data == '1') {                                                    
+                            window.location.href = '/'
+                        }else if (res.data == '01' || res.data == '0') {
+                            // Show the Bootstrap modal when login fails
+                            showLoginFailed();
+                    }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        alert(`Error logging in: ${err}`);
+                    })
+            },
+
+
+        },
+
+    })
+
+
+</script>
+
+{% endblock %}

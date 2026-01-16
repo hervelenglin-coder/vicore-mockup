@@ -1,0 +1,3 @@
+[submodule "eurotunnel_datamodel"]
+	path = eurotunnel_datamodel
+	url = git@github.com:vicor-vision/eurotunnel_datamodel.git

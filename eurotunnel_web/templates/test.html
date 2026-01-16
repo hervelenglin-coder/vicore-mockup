@@ -1,0 +1,164 @@
+{% extends 'authorised_users_base.html' %}
+
+    {% block title %} System View {% endblock %}
+
+
+
+    {% block authorized_content %}
+<div id="app">
+
+    {% include "includes/y25_include.html" %}
+
+  badgers
+    <button onclick="Array.from(document.querySelectorAll('circle')).forEach(
+      (el) => el.classList.remove('spring-sel','ci-col-3')
+
+    );"> clear</button>
+    <button onclick="testSel()"> select bg1</button>
+    <button onclick="set()"> set</button>
+    <div display="inline-block" style="position: static; left: 200px" id="bogie1">
+    <svg width="240px"; height="420px"  viewBox="0 0 95.127113 136.82851" version="2.0" style="width:340px;color=#303090"   >
+        <use href="#y25" width: "240px"; height="420px"; data-bogie-offset="1" data-bogie-id="1" id="test" />
+      </svg>
+    </div>
+
+  <div display="inline-block" style="position: static; left: 200px" id="bogie2">
+    <svg width="240px" height="420px"  viewBox="0 0 95.127113 136.82851" version="2.0" style="width:340px;" >
+        <use href="#y25" width: "240px" height="420px" data-bogie-offset="3" data-bogie-id="2" />
+      </svg>
+    </div>
+  
+
+</div>
+
+<script>
+
+  //[data-bogie-id="1"]
+  function testSel(){
+    Array.from(document.querySelectorAll(`circle`)).forEach(
+      (el) => el.classList.add('spring-sel')
+    );
+  }
+
+  function spring1Load(){
+    console.debug("spring 1 loaded");
+  }
+
+initialSetup();
+function initialSetup()
+{
+  const bogieEL = document.querySelector(`[data-bogie-id="2"]`);  
+  console.debug('el to updatae',bogieEL)
+  resetBogie(bogieEL);
+
+}
+
+function resetBogie(bogie){
+
+  //stroke:var(--first-spring-col);stroke-width:var(--first-spring-stroke);stroke-opacity:var(--first-spring-opacity);
+
+  bogie.style.setProperty('--extra-sel-vis','none');
+  
+}
+function set()
+{
+  const bogieN = 0;
+  const bogieEL = document.querySelector(`[data-bogie-id="${bogieN+1}"`); 
+  const bogie_axle = 8;
+  const propName = `--spring${bogie_axle}col`;
+  const  colName= '--okay-col';
+  const propValue = `var(${colName})`
+  bogieEL.style.setProperty(propName,propValue);
+  console.debug("first diff",findFirstDiff(propName,'--springl8col'));
+  bogieEL.style.setProperty("--rad","8");
+  //bg1.style.setProperty('--wheel8col','var(--okay-col)');
+}
+
+const findFirstDiff = (str1, str2) => {
+  if (str1.length === 0 || str2.length === 0) return "";
+  return str2[[...str1].findIndex((el, index) => el !== str2[index])];
+}
+
+/*
+So, the only odd thing about this is the scopes.
+The only way I've made it work is setting the click event 
+handler in the SVG symbol (in y25_include) and actually 
+handling it here.
+The page can#t see the circle directly - document.querySelectorAll("circle") 
+does find anything - and the SVG does seem to fire the click hander if you embed it there.
+Also this way you can see all of the bogie, not just one at a time
+*/
+  var lastTarget = null;
+  var firstClick = true;
+  function clickHandler(e){
+    var forceRedraw = function(element){
+
+      if (!element) { return; }
+  
+      var n = document.createTextNode(' ');
+      var disp = element.style.display;  // don't worry about previous display style
+  
+      element.appendChild(n);
+      element.style.display = 'none';
+  
+      setTimeout(function(){
+          element.style.display = disp;
+          n.parentNode.removeChild(n);
+      },500); // you can play with this timeout to make it as short as possible
+
+      console.debug("Force forceRedraw", element)
+  }
+    
+    if(firstClick){
+      const bogies = document.querySelectorAll('[data-bogie-id]');
+      bogies.forEach((bogie) => bogie.style.setProperty('--extra-sel-1-vis','none'));
+    }
+    const target = e.target;
+    console.debug( "page handler");
+    
+    console.debug( target);
+    console.debug('currentTarget: ',e.currentTarget.tagName);
+    console.debug(e.currentTarget);
+
+   if(lastTarget != null)
+   {
+    console.debug("last target",lastTarget);
+    lastTarget.classList.remove('spring-sel');
+    forceRedraw(lastTarget);
+   }
+   target.setAttribute('fill', 'red');
+   target.style.fill = "green";
+   target.classList.add('spring-sel');
+   forceRedraw(target);
+   console.debug("target",target);
+   //document.getElementById('bogie2').style.display = 'none';
+    //document.getElementById('bogie2').style.display = 'block';
+   lastTarget = target;
+
+
+   
+ }
+function firstclickHandler(evt){
+  console.debug("first");
+}
+ function bogieClick(e){
+  console.debug("bogie click");
+  console.debug(e.target);
+ }
+ 
+
+ document.addEventListener('DOMContentLoaded', () => {
+ 
+  const bogies = document.querySelectorAll('[data-bogieid]');
+  for (const bogie of bogies){
+    bogie.addEventListener("click", (e) =>bogieClick(e));
+  }
+ 
+ /*Array.from(document.querySelectorAll("circle")).forEach(
+  (el) => el.addEventListener("click", (e) =>clickHandler(e))
+); */
+
+ });</script>
+
+{% endblock %}
+

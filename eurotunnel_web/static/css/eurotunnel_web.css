@@ -1,0 +1,597 @@
+/*global defaults*/
+body {
+    font-family: Helvetica,Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    background-color: #f5f5f5;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+a, .el-button {
+    font-weight: 600;
+}
+
+/*these colours are 
+also applied to the springs
+in accordance with conf_code
+*/
+:root{      
+    --bad-col: #bf0000;
+    --unsure-col: #f4f000;
+    --okay-col: #5bca5f;
+    --confirmed-okay-col: hsl(244, 71%, 56%);
+    --unchecked-col: #e7e7e7;
+    --selected-item-col: #4058ff;
+    --unselected-spring-stroke: #04325f;    
+
+    --extra-sel-1-opacity: 0;
+    --extra-sel-2-opacity: 0;
+    --extra-sel-3-opacity: 0;
+    --extra-sel-4-opacity: 0;
+    --extra-sel-5-opacity: 0;
+    --extra-sel-6-opacity: 0;
+    --extra-sel-7-opacity: 0;
+    --extra-sel-8-opacity: 0;
+}
+
+
+/*Header bar */
+.auth_head {   
+    background-color: #95d2e8;    
+}
+
+.userDetailsFont
+{
+
+    color: #ca8b5d;
+}
+a.logoutLink:visited
+{
+    color: #ca9e5d;
+}
+a.logoutLink
+{
+    color: #ca9e5d;
+}
+
+.versionInfo
+{
+    display:inline-block;
+    font-size: small;
+    text-align: left;
+    background-color: #13d609;
+    padding: 3px;
+    box-sizing: border-box;
+    width: 50%;
+}
+/*status circles */
+
+.status-circle {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: 5px;
+    right: 0px;
+    
+    border-radius: 50%;
+    
+}
+
+.status-circle-small {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%; 
+    
+}
+/* status circle condition */
+.status-error
+{
+    background-color:  var(--bad-col);
+    box-shadow: 0 0 8px rgba(206, 79, 6,0.6);
+    border: 2px solid rgb(255, 187, 0);
+}
+
+.status-healthy
+{
+    background-color: var(--okay-col);
+    box-shadow: 0 0 8px rgb(106, 237, 241);
+    border: 2px solid rgb(229, 231, 229);
+}
+
+.status-unknown
+{
+    background-color: rgba(4, 61, 250, 0.6);
+    box-shadow: 0 0 8px rgb(106, 237, 241);
+    border: 2px solid rgb(229, 231, 229);
+}
+
+
+.heartbeatoutter
+{
+    caption-side: top;
+ 
+}
+.heartbeatoutter tbody tr td
+{
+    border-left-color: black;
+    border-left-style: solid;
+    border-left-width: 1px;
+    padding: 3px;
+}
+
+/*On the status modal this stuff does the cameras table*/
+.camsubtable tbody tr td
+{
+    border-left: none;
+    padding: 5px;
+}
+
+.camsubtable thead tr th
+{
+font-style: italic;
+font-weight: 100;
+}
+.camsubtable tbody tr:nth-child(odd)
+{
+background-color: #f2f2f2;
+}
+/*The VUE part of the page*/
+
+#app {
+    max-width: 90%;
+    /*Possibly controversial, 
+    but I think especailly car view looks better wider*/
+    margin: auto;
+    padding: 20px;
+}
+
+.el-button {
+    border: none;
+    border-radius: 4px;
+    background-color: #409EFF;
+    color: white;
+}
+
+.el-button:hover {
+    background-color: #66b1ff;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+div[style*="background-color: rgba(50,50,50,0.5)"] {
+    background-color: #eaeaea;
+}
+
+div[style*="border-radius: 10px;"], div[style*="background-color: #c6c6c6;"] {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+div[style*="border-radius: 10px;"]:hover, div[style*="background-color: #c6c6c6;"]:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+div[style*="padding: 5px 0 0 0 "] {
+    margin-top: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+div[style*="padding: 5px 0 0 0 "]:hover {
+    background-color: #f0f0f0;
+}
+/* List of train pass items 
+    In here, so it can change with device size*/
+#tplist {
+    width: 95%;
+    display: inline-block; 
+    vertical-align: top; 
+    padding: 0;
+     max-height: 580px;
+}
+#tplistOutter
+ {
+    width: 32ch;
+    max-height: 600px;
+    display: inline-block; 
+    vertical-align: top; 
+    padding: 0;
+}
+div.install
+{
+    max-height: 280px;
+    display: inline-block; 
+    width: 100%;
+    overflow: auto;
+}
+/* Formatting for Train Pass items (in the train pass list box) */
+div.trainPassItem {
+    border-radius: 5px;
+    width: 87%;
+    /*height: 30px; 
+    if you set the height on my displa y
+    the text doesn't fit.*/
+    display: flex;
+    justify-content: center; 
+    align-items: center;    
+    overflow: hidden;
+}
+div.trainPassItem:hover {
+    cursor: pointer;
+}
+
+div.trainPassItemSel {
+    transition: 0.5s;
+    font-weight: 800;
+    font-size: large;
+    width: 93%;
+    border-width: 5px !important;
+    border-color:var(--selected-item-col) !important;
+}
+
+/* Colouring of Train Pass items - The numbers 1 to 5 correspond with the conf_codes */
+div.tp-col-1 {
+    border: 3px solid #9ce49f;
+    background-color: #e6f3e6;
+}
+div.tp-col-2 {
+    border: 3px solid #e48800;
+}
+div.tp-col-3 {
+    border: 3px solid #e6ad00;
+    background-color: #ecea57;
+}
+div.tp-col-4 {
+    border: 3px solid red;
+}
+div.tp-col-5 {
+    border: 3px solid var(--bad-col);
+    background-color: #ff5044;
+}
+div.tp-col-0 {
+    background-color: #3c141191;
+}
+/* Train pass has been manually confirmed to be okay*/
+div.checked-ok {
+    background-color: white !important;
+}
+
+div.carriageItemBlock {
+    display: inline-flex;
+    margin: 14px 0;
+    box-sizing: border-box;
+}
+
+div.carriageItemBlock-columnar {
+    display: inline-block;
+    margin: 9px 0;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+/* Formatting of the Car icon boxes (the actual grey-background boxes) */
+div.carriageItemOuter {
+    width: 100px;
+    height: 98px;
+    background-color: #c6c6c6;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 1.5;
+    display: inline-block;
+    position: relative;
+}
+div.carriageItemOuter:hover {
+    cursor: pointer;
+}
+/* Formatting of the text (number) in the Car item icons */
+div.carriageItemText {
+    color: #d7d7d7;
+    font-size: 12pt;
+    font-weight: bold;
+    text-shadow: 0px 2px 2px #8f8f8f;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 2px 4px;
+}
+div.carriageOrderNum {
+    background-color: #9b9b9b;
+    color: #c6c6c6;
+    border-radius: 6px;
+    font-size: 9pt;
+    font-weight: normal;
+    text-align: center;
+    vertical-align: middle;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+}
+div.citxt-rfid {
+    color: white;
+}
+div.citxt-rake {
+    color: #f2e497;;
+}
+
+/* Formatting of the white box in the Car item icons, where the little image sits */
+div.carriageItemIconDiv {
+    background-color: white;
+    width: 90px;
+    height: 35px;
+    margin: 0 auto;
+    border-radius: 3px;
+}
+/* Formatting of the actual image in the Car icon boxes */
+div.carriageItemIconDiv img { 
+    width: 80px;
+    height: 30px;
+}
+/* Formatting of the padding div that sits around the colour indicator box of the Car icons */
+div.carriageItemColorPadDiv {
+    padding: 5px 0 0 0;
+}
+/* Formatting of the colour indicator box of the Car icons - everything EXCEPT the colour itself */
+div.carriageItemColorDiv {
+    width: 80px;
+    height: 20px;
+    margin: 0 auto;
+    border-radius: 4px;
+    box-shadow: 0px 0.7px 6px #7b7b7b inset;
+}
+
+
+/* Colouring of the Car icon indicator box - The numbers 1 to 3 correspond with the conf_codes */
+.ci-col-0 {
+    background-color: var(--unchecked-col);
+    color:var(--unchecked-col);
+}
+.ci-col-1 {
+    background-color: var(--okay-col);
+    color:var(--okay-col);
+}
+.ci-col-2 {
+    background-color: var(--unsure-col);
+    color: var(--unsure-col);
+}
+.ci-col-3 {
+    background-color: var(--bad-col) ;
+    color:var(--bad-col);
+}
+
+.ci-col-human-confirmed {
+    background-color: var( --confirmed-okay-col) ;
+    color:var( --confirmed-okay-col);
+}
+
+/* Blue outline that appears around a Car icon when it is the currently displayed car */
+.ci-sel { 
+    outline: 5px solid var(--selected-item-col);
+    outline-offset: 2px;
+}
+ 
+/* Small vertical bar between carriage icons that shows they are joined */
+div.carriageJoin {
+    background-color: #81c38f;
+    height: 50px;
+    width: 10px;
+    position: relative;
+    top: 25px;
+    border-radius: 6px;
+    margin: 0 5px;
+}
+
+/* spring circles, when not selected */
+circle.spring-indictator{
+    transition: all 0.5s;
+    stroke: var(--unselected-spring-stroke);
+    stroke-width: 1px;
+    stroke-opacity: 0.1;
+    fill-opacity:1;
+}
+
+circle.spring-indictator:hover {
+    cursor: pointer;
+}
+/* Blue outline that appears around a spring circle blob when it is the currently displayed spring
+---but only in firefox */
+circle.spring-sel{
+    stroke: var(--selected-item-col);
+    stroke-width: 3px;
+    stroke-opacity: 1;   
+}
+
+circle.selindicator {
+    transition: all 0.5s;  
+    stroke:var(--selected-item-col);
+    stroke-width:3;
+    display:block;
+    fill: none;
+}
+
+
+
+
+/* The outline of the vehicle itself in the vehicle plan-view */
+div.wagon-box {
+    display: inline-block;
+    vertical-align: top;
+    border: 5px solid black;
+    position: relative;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    border-radius: 12px;
+    margin: 0 0 0 30px;
+    max-height: 650px;
+}
+
+/* The outline of each bogie in the vehicle plan-view */
+div.bogie-box {
+    border: 5px solid black;
+    background: #c6c6c6;
+    width: 180px;
+    /*height unspecified, grows with bogie image*/   
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    margin:5px;   
+}
+
+
+/*This gets added when there are more than 2 bogie boxes
+The purpose is to prevent the bogie boxes overfilling the wagon-box.
+I realise I could just hide that, but that would look even worse*/
+div.bogie-box-many {
+    max-height: 150px;
+    /*I set the height. If I also set the width the
+    aspect ratio is all wrong*/
+    width: unset;
+}
+
+div.bogie-box-many svg{
+    height: 140px;
+}
+
+/* The label text for both 'Leading Bogie' and 'Trailing Bogie' in the plan-view */
+div.bglabel {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+/* Positioning of 'Leading Bogie' text */
+
+div.bglead {
+
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+} 
+/* Positioning of 'Trailing Bogie' text */
+
+div.bgtrail {
+    margin-top: 5px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+    
+/* Formatting of the car number text in the plan-view */
+div.carlabel {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;   
+    width: 100%;
+}
+/* Formatting of the smaller 'thumbnail' photos on the right */
+img.springthumb {
+    width: 80%;
+    min-height: 200px;
+}
+img.springthumb:hover {
+    cursor: pointer;
+}
+/* Formatting of the large 'main' photo in the middle of the page */
+img.main {
+    width: 100%;
+}
+/* Formatting of the forward/backward camera buttons below the main photo */
+img.camico {
+    width: 48px;    
+    height: 48px;
+    margin: 20px 20px;
+}
+img.camico:hover {
+    cursor: pointer;
+}
+/* Formatting of the back arrow button */
+.backicon:hover {
+    cursor: pointer;
+}
+#btnLoadMore{
+    margin-top: 10px;
+    margin-left: 20px;
+    background-color: #66b1ff;
+}
+#btnLoadMore:hover {
+    background-color: #055ab6;
+}
+
+/* override the bootstrap behaviour and make the alerts stay at the top of the page
+*/
+.alert-fixed {
+    position:fixed; 
+    top: 50px; 
+    left: 5%; 
+    width: 90%;
+    z-index:9999; 
+    
+}
+
+/* The brightness and contrast controls*/
+.imgCntlLabels{
+    width: 160px;
+    display: inline-block;
+    text-align: right;
+}
+
+div.bellowPictureButtons {
+    display: flex;
+    justify-content: space-between;
+}
+.springNavButton {
+  --bs-btn-bg: #7bbef9d6;
+  --bs-btn-border-color: #b514a3;
+  --bs-btn-hover-color: #f9e9f5;
+}
+
+/* img grow on click for looking at awol spring images */
+.awol-img {
+  cursor: pointer;
+  transition:transform 0.25s ease;
+}
+
+.awol-img:hover {
+    -webkit-transform:scale(3); 
+    transform:scale(3);
+  cursor: unset;
+}
+
+
+
+
+
+/*smaller devices*/
+@media only screen and (max-width: 480px) {
+    #tplist {
+        width:unset;
+        /*let it shrink, but only on small devices
+        if we just use max-width it's too small on 
+        normal screens */
+    }
+    .auth_head {
+        min-height: 10%;
+        
+      }
+  
+  
+      .versionInfo
+      {
+          font-size: smaller;
+          padding: 1px;
+      }
+  
+      .status-circle {
+          width: 20px;
+          height: 20px;
+          top: 5px;
+  
+          
+      }
+  }

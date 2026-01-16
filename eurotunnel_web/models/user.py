@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field,NonNegativeInt
+from pydantic import BaseModel, Field, NonNegativeInt
 
 
-class User(BaseModel):    
+class User(BaseModel):
     id: NonNegativeInt
     name: str = Field(..., min_length=2)

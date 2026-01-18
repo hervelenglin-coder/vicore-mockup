@@ -247,6 +247,97 @@ body {
 }
 
 /* ============================================
+   MOBILE MENU
+   ============================================ */
+
+.mobile-menu-toggle {
+    display: none;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+}
+
+.mobile-menu-toggle span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: var(--text-primary);
+    border-radius: 1px;
+    transition: all 0.3s;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(4px, 4px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(4px, -4px);
+}
+
+.mobile-nav {
+    display: none;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-secondary);
+    z-index: 99;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.mobile-nav.active {
+    display: block;
+}
+
+.mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    color: var(--text-primary);
+    text-decoration: none;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.active {
+    background: var(--bg-hover);
+}
+
+.mobile-nav-item.active {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.mobile-nav-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 16px 0;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: flex;
+    }
+}
+
+/* ============================================
    MAIN LAYOUT
    ============================================ */
 
@@ -1253,6 +1344,7 @@ tr:hover {
    RESPONSIVE
    ============================================ */
 
+/* Tablet */
 @media (max-width: 1024px) {
     .sidebar {
         width: 280px;
@@ -1260,15 +1352,76 @@ tr:hover {
     .content {
         margin-left: 280px;
     }
+
+    .car-view-layout {
+        grid-template-columns: 60px 1fr 250px;
+    }
+
+    .wagon-nav-item {
+        width: 50px;
+        height: 50px;
+        font-size: 12px;
+    }
+
+    .bogie-panel {
+        padding: 16px;
+    }
+
+    .stats-row {
+        flex-wrap: wrap;
+    }
 }
 
+/* Mobile Landscape / Small Tablet */
 @media (max-width: 768px) {
     .header {
-        padding: 0 16px;
+        padding: 0 12px;
+        height: 56px;
+    }
+
+    .header-left {
+        gap: 12px;
     }
 
     .nav-tabs {
         display: none;
+    }
+
+    .logo-text {
+        display: none;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    .status-indicator span:not(.status-dot) {
+        display: none;
+    }
+
+    .clock {
+        display: none;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 12px;
     }
 
     .sidebar {
@@ -1277,18 +1430,364 @@ tr:hover {
 
     .content {
         margin-left: 0;
-        padding: 16px;
+        padding: 12px;
     }
 
+    .main-container {
+        padding-top: 56px;
+    }
+
+    /* Car View Layout - Stack vertically */
+    .car-view-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: auto;
+        min-height: calc(100vh - 80px);
+    }
+
+    .wagon-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        order: -1;
+    }
+
+    .wagon-nav-item {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        font-size: 11px;
+    }
+
+    .spring-viewer {
+        order: 0;
+    }
+
+    .bogie-panel {
+        order: 1;
+    }
+
+    .image-container {
+        min-height: 250px;
+    }
+
+    .image-controls {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .nav-buttons {
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        flex: 1 1 calc(50% - 6px);
+        min-width: 120px;
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    /* Login Page */
     .login-container {
         flex-direction: column;
+        max-width: 100%;
+        width: 100%;
+        border-radius: 0;
+        min-height: 100vh;
     }
 
     .login-branding {
-        padding: 40px;
+        padding: 30px 20px;
+    }
+
+    .login-logo {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+        border-radius: 16px;
+    }
+
+    .login-title {
+        font-size: 28px;
     }
 
     .login-form-section {
-        padding: 40px;
+        padding: 30px 20px;
+    }
+
+    .login-welcome {
+        font-size: 20px;
+    }
+
+    /* Cards */
+    .card {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .card-title {
+        font-size: 15px;
+    }
+
+    /* Wagon Grid */
+    .wagon-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 8px;
+    }
+
+    .wagon-card {
+        border-radius: 8px;
+    }
+
+    .wagon-number {
+        font-size: 14px;
+    }
+
+    .wagon-id {
+        font-size: 8px;
+    }
+
+    /* Stats Row */
+    .stats-row {
+        gap: 8px;
+    }
+
+    .stat-item {
+        padding: 6px 12px;
+        flex: 1 1 calc(50% - 4px);
+        min-width: 100px;
+    }
+
+    .stat-value {
+        font-size: 16px;
+    }
+
+    .stat-label {
+        font-size: 10px;
+    }
+
+    /* Train Details */
+    .train-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .train-title {
+        font-size: 20px;
+    }
+
+    /* Tables */
+    .table-container {
+        margin: 0 -16px;
+        padding: 0 16px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 8px 10px;
+    }
+
+    /* Filters */
+    .filters-bar {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+    }
+
+    /* History Grid */
+    .history-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .page-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
+    /* Modals */
+    .modal {
+        width: 95%;
+        max-height: 95vh;
+        border-radius: 12px;
+    }
+
+    .modal-header {
+        padding: 16px;
+    }
+
+    .modal-title {
+        font-size: 16px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    .modal-footer {
+        padding: 16px;
+        flex-direction: column;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+
+    /* Bogie Diagram */
+    .bogie-diagram {
+        padding: 12px;
+    }
+
+    .spring-dot {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Alert Banner */
+    .alert-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .alert-banner .btn {
+        width: 100%;
+    }
+}
+
+/* Mobile Portrait */
+@media (max-width: 480px) {
+    .header {
+        padding: 0 8px;
+    }
+
+    .lang-switch {
+        display: none;
+    }
+
+    .wagon-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .wagon-card {
+        aspect-ratio: 1;
+    }
+
+    .stats-row {
+        flex-direction: column;
+    }
+
+    .stat-item {
+        width: 100%;
+    }
+
+    .history-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .car-view-layout {
+        gap: 12px;
+    }
+
+    .spring-viewer {
+        padding: 12px;
+    }
+
+    .viewer-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .bogie-panel {
+        padding: 12px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* Breadcrumb */
+    .main-container > .content > div:first-child {
+        font-size: 12px;
+        flex-wrap: wrap;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .wagon-card:hover,
+    .train-pass-item:hover,
+    .history-card:hover {
+        transform: none;
+    }
+
+    .spring-dot {
+        width: 28px;
+        height: 28px;
+    }
+
+    .btn, .nav-btn, .page-btn {
+        min-height: 44px;
+    }
+
+    .wagon-nav-item {
+        min-width: 56px;
+        min-height: 56px;
+    }
+}
+
+/* Reports Page Responsive */
+@media (max-width: 900px) {
+    .reports-layout {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .preview-stat {
+        padding: 12px;
+    }
+
+    .preview-stat-value {
+        font-size: 24px;
+    }
+
+    .chart-placeholder {
+        height: 160px;
+        padding: 16px;
+    }
+
+    .download-btns {
+        flex-wrap: wrap;
     }
 }

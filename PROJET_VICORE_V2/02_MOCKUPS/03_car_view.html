@@ -33,7 +33,7 @@
             );
         }
         .spring-image-mock::after {
-            content: 'Ressort - Bogie 1 - Essieu 2 - Gauche - Menant';
+            content: 'Essieu 3 - FL (Front Left) - Confiance: 0.26';
             position: absolute;
             bottom: 20px;
             font-size: 12px;
@@ -135,11 +135,11 @@
         <main class="content full-width">
             <!-- Breadcrumb -->
             <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted);">
-                <a href="02_system_view.html" style="color: var(--accent-cyan); text-decoration: none;">9N57 - 1234</a>
+                <a href="02_system_view.html" style="color: var(--accent-cyan); text-decoration: none;">Train Pass #28825</a>
                 <span>/</span>
-                <span>Wagon W2</span>
+                <span>Vehicule 7907</span>
                 <span>/</span>
-                <span style="color: var(--text-primary);">Bogie 1 - Essieu 2 - Gauche - Menant</span>
+                <span style="color: var(--text-primary);">Essieu 3 - FL (Front Left)</span>
             </div>
 
             <!-- Alert Banner -->
@@ -147,7 +147,7 @@
                 <span class="alert-banner-icon">&#9888;</span>
                 <div class="alert-banner-text">
                     <div class="alert-banner-title">Ressort necessitant verification</div>
-                    <div class="alert-banner-desc">Le systeme a detecte une incertitude sur ce ressort (Conf Code: 2). Veuillez verifier visuellement et confirmer le statut.</div>
+                    <div class="alert-banner-desc">Le systeme a detecte une incertitude sur ce ressort (Confiance: 0.26 - Unchecked). Veuillez verifier visuellement et confirmer le statut.</div>
                 </div>
                 <button class="btn btn-primary" onclick="openConfirmModal()">Confirmer le statut</button>
             </div>
@@ -156,35 +156,35 @@
                 <!-- Wagon Navigation -->
                 <nav class="wagon-nav">
                     <a href="#" class="wagon-nav-item ok">
-                        <span style="font-weight: 600;">W1</span>
+                        <span style="font-weight: 600;">9704</span>
                         <span style="font-size: 10px; color: var(--text-muted);">OK</span>
                     </a>
                     <a href="#" class="wagon-nav-item warning active">
-                        <span style="font-weight: 600;">W2</span>
+                        <span style="font-weight: 600;">7907</span>
                         <span style="font-size: 10px; color: var(--accent-yellow);">!</span>
                     </a>
                     <a href="#" class="wagon-nav-item ok">
-                        <span style="font-weight: 600;">W3</span>
+                        <span style="font-weight: 600;">8123</span>
                         <span style="font-size: 10px; color: var(--text-muted);">OK</span>
                     </a>
                     <a href="#" class="wagon-nav-item ok">
-                        <span style="font-weight: 600;">W4</span>
+                        <span style="font-weight: 600;">8124</span>
                         <span style="font-size: 10px; color: var(--text-muted);">OK</span>
                     </a>
                     <a href="#" class="wagon-nav-item warning">
-                        <span style="font-weight: 600;">W5</span>
+                        <span style="font-weight: 600;">8125</span>
                         <span style="font-size: 10px; color: var(--accent-yellow);">!</span>
                     </a>
                     <a href="#" class="wagon-nav-item ok">
-                        <span style="font-weight: 600;">W6</span>
+                        <span style="font-weight: 600;">8126</span>
                         <span style="font-size: 10px; color: var(--text-muted);">OK</span>
                     </a>
                     <a href="#" class="wagon-nav-item ok">
-                        <span style="font-weight: 600;">W7</span>
+                        <span style="font-weight: 600;">8127</span>
                         <span style="font-size: 10px; color: var(--text-muted);">OK</span>
                     </a>
                     <a href="#" class="wagon-nav-item ok" style="border-left-color: var(--accent-purple);">
-                        <span style="font-weight: 600;">W8</span>
+                        <span style="font-weight: 600;">8128</span>
                         <span style="font-size: 10px; color: var(--accent-purple);">&#10004;</span>
                     </a>
                 </nav>
@@ -193,9 +193,9 @@
                 <div class="spring-viewer">
                     <div class="viewer-header">
                         <div>
-                            <span class="spring-position">Ressort 9/16 - Position: Bogie 1 / Essieu 2 / Gauche / Menant</span>
+                            <span class="spring-position">Vehicule 7907 - Essieu 3 - FL (Front Left)</span>
                         </div>
-                        <span class="spring-status-badge warning">Conf Code: 2 - Incertain</span>
+                        <span class="spring-status-badge warning">Confiance: 0.26 - Unchecked</span>
                     </div>
 
                     <div class="image-container">
@@ -203,7 +203,7 @@
                             <div class="zoom-indicator">Zoom: 100%</div>
                             <div class="confidence-bar">
                                 <div class="confidence-label">Niveau de confiance</div>
-                                <div class="confidence-value">72%</div>
+                                <div class="confidence-value">26%</div>
                             </div>
                         </div>
                     </div>
@@ -237,142 +237,119 @@
                         <h3 class="bogie-title">Wagon W2 - Chargeur</h3>
                     </div>
 
-                    <!-- Note: Structure du wagon
-                         - 2 bogies par wagon (Avant/Arriere)
-                         - 2 essieux par bogie
-                         - 2 roues par essieu (Gauche/Droite)
-                         - 2 ressorts par roue (Menant/Mene)
-                         Total: 2 x 2 x 2 x 2 = 16 ressorts par wagon
+                    <!-- Note: Structure des positions camera par essieu
+                         - FL = Front Left (Avant Gauche)
+                         - FR = Front Right (Avant Droit)
+                         - BL = Back Left (Arriere Gauche)
+                         - BR = Back Right (Arriere Droit)
+                         - 4 positions camera par essieu
+                         - Nombre d'essieux variable selon le type de vehicule
                     -->
                     <div class="bogie-diagram">
                         <div class="bogie-section">
-                            <div class="bogie-label">Bout 1 - Bogie Avant (Leading)</div>
+                            <div class="bogie-label">Vehicule 7907 - ETMR-7907-AMC2B</div>
 
                             <!-- Essieu 1 -->
                             <div style="background: var(--bg-card); border-radius: 8px; padding: 12px; margin-bottom: 8px;">
                                 <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 1</div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <!-- Roue Gauche -->
+                                <div style="display: flex; justify-content: space-around; align-items: center;">
                                     <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                        <div class="spring-dot ok" title="FL - Front Left" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">FL</div>
                                     </div>
-                                    <!-- Axe -->
-                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
-                                    <!-- Roue Droite -->
                                     <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                        <div class="spring-dot ok" title="FR - Front Right" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">FR</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BL - Back Left" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BL</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BR - Back Right" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BR</div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Essieu 2 -->
-                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px;">
-                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 2</div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <!-- Roue Gauche -->
-                                    <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot warning active" title="Menant - ALERTE" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
-                                    </div>
-                                    <!-- Axe -->
-                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
-                                    <!-- Roue Droite -->
-                                    <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bogie-section">
-                            <div class="bogie-label">Bout 2 - Bogie Arriere (Trailing)</div>
-
-                            <!-- Essieu 1 -->
                             <div style="background: var(--bg-card); border-radius: 8px; padding: 12px; margin-bottom: 8px;">
-                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 1</div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <!-- Roue Gauche -->
+                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 2</div>
+                                <div style="display: flex; justify-content: space-around; align-items: center;">
                                     <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                        <div class="spring-dot ok" title="FL" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">FL</div>
                                     </div>
-                                    <!-- Axe -->
-                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
-                                    <!-- Roue Droite -->
                                     <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                        <div class="spring-dot ok" title="FR" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">FR</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BL" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BL</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BR" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BR</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Essieu 2 -->
-                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px;">
-                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 2</div>
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <!-- Roue Gauche -->
+                            <!-- Essieu 3 - avec alerte -->
+                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--accent-yellow);">
+                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 3 <span style="color: var(--accent-yellow);">&#9888;</span></div>
+                                <div style="display: flex; justify-content: space-around; align-items: center;">
                                     <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                        <div class="spring-dot warning active" title="FL - ALERTE - Confiance: 0.26" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--accent-yellow); margin-top: 2px;">FL</div>
                                     </div>
-                                    <!-- Axe -->
-                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
-                                    <!-- Roue Droite -->
                                     <div style="text-align: center;">
-                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
-                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
-                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
-                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
-                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
-                                        </div>
-                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                        <div class="spring-dot ok" title="FR" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">FR</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BL" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BL</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BR" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BR</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Essieu 4 -->
+                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px;">
+                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 4</div>
+                                <div style="display: flex; justify-content: space-around; align-items: center;">
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="FL" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">FL</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="FR" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">FR</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BL" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BL</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="spring-dot ok" title="BR" style="width: 20px; height: 20px;"></div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">BR</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                     <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 20px; background: var(--bg-secondary); padding: 10px; border-radius: 6px;">
-                        <strong>Legende:</strong><br>
-                        <span style="color: var(--accent-cyan);">M</span> = Menant (Leading) | <span style="color: var(--accent-cyan);">m</span> = Mene (Trailing)<br>
+                        <strong>Legende - Positions Camera:</strong><br>
+                        <span style="color: var(--accent-cyan);">FL</span> = Front Left |
+                        <span style="color: var(--accent-cyan);">FR</span> = Front Right |
+                        <span style="color: var(--accent-cyan);">BL</span> = Back Left |
+                        <span style="color: var(--accent-cyan);">BR</span> = Back Right<br>
                         Cliquez sur un ressort pour afficher son image
                     </div>
 
@@ -427,9 +404,9 @@
                 <div style="background: var(--bg-secondary); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
                     <strong style="display: block; margin-bottom: 8px;">Informations:</strong>
                     <div style="font-size: 13px; color: var(--text-secondary);">
-                        <div>Wagon: W2 (RFID: 4522)</div>
-                        <div>Position: Bogie 1 - Essieu 2 - Gauche - Menant</div>
-                        <div>Conf Code actuel: 2 (Incertain)</div>
+                        <div>Vehicule: 7907 (RFID: ETMR-7907-AMC2B)</div>
+                        <div>Position: Essieu 3 - FL (Front Left)</div>
+                        <div>Confiance: 0.26 (Unchecked)</div>
                         <div>Detection: 18/01/2026 14:32:47</div>
                     </div>
                 </div>

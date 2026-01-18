@@ -395,6 +395,46 @@
             margin-left: 8px;
         }
 
+        .conditions-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .conditions-badge span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .conditions-badge .condition-warning {
+            color: var(--accent-yellow);
+        }
+
+        .conditions-badge .condition-good {
+            color: var(--accent-green);
+        }
+
+        .condition-alert {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--accent-yellow);
+            margin: 8px 20px 8px 76px;
+        }
+
+        .condition-alert-icon {
+            font-size: 14px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .dashboard-stats {
@@ -602,6 +642,12 @@
                                     <span>18/01/2026 14:32</span>
                                     <span>ETMR-9704-LOC2B</span>
                                 </div>
+                                <div class="conditions-badge">
+                                    <span class="condition-good">&#9728; Jour</span>
+                                    <span class="condition-good">&#128167; Sec</span>
+                                    <span>&#127777; 8°C</span>
+                                    <span>&#128663; 42 km/h</span>
+                                </div>
                             </div>
                         </div>
                         <div class="alert-group-actions">
@@ -640,7 +686,7 @@
                     </div>
                 </div>
 
-                <!-- Alert Group 2 - Critical -->
+                <!-- Alert Group 2 - Critical with weather warning -->
                 <div class="alert-group critical">
                     <div class="alert-group-header" onclick="toggleAlertGroup(this)">
                         <div class="alert-group-info">
@@ -652,6 +698,12 @@
                                     <span>18/01/2026 13:42</span>
                                     <span>ETMR-8501-AMC1B</span>
                                 </div>
+                                <div class="conditions-badge">
+                                    <span class="condition-good">&#9728; Jour</span>
+                                    <span class="condition-warning">&#127787; Brouillard</span>
+                                    <span>&#127777; 5°C</span>
+                                    <span>&#128663; 38 km/h</span>
+                                </div>
                             </div>
                         </div>
                         <div class="alert-group-actions">
@@ -661,6 +713,10 @@
                         </div>
                     </div>
                     <div class="alert-items">
+                        <div class="condition-alert">
+                            <span class="condition-alert-icon">&#127787;</span>
+                            <span>Conditions defavorables: Brouillard detecte (visibilite &lt; 200m) - Verification manuelle recommandee</span>
+                        </div>
                         <div class="alert-item" onclick="window.location.href='03_car_view.html'">
                             <div class="alert-item-info">
                                 <div class="alert-item-dot critical"></div>
@@ -688,6 +744,12 @@
                                     <span>Voie E</span>
                                     <span>18/01/2026 14:10</span>
                                     <span>ETMR-9102-PTC3A</span>
+                                </div>
+                                <div class="conditions-badge">
+                                    <span class="condition-good">&#9728; Jour</span>
+                                    <span class="condition-good">&#128167; Sec</span>
+                                    <span>&#127777; 9°C</span>
+                                    <span>&#128663; 45 km/h</span>
                                 </div>
                             </div>
                         </div>
@@ -751,6 +813,12 @@
                                     <span>Voie D</span>
                                     <span>18/01/2026 12:17</span>
                                     <span>ETMR-7650-LOC1A</span>
+                                </div>
+                                <div class="conditions-badge">
+                                    <span class="condition-good">&#9728; Jour</span>
+                                    <span class="condition-warning">&#127783; Pluie legere</span>
+                                    <span>&#127777; 6°C</span>
+                                    <span>&#128663; 40 km/h</span>
                                 </div>
                             </div>
                         </div>

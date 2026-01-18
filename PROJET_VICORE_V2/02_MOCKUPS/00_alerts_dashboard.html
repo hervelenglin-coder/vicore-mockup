@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICORE - Dashboard Alertes</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .stat-card.critical {
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .stat-card.warning {
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .stat-card.info {
+            border-left: 4px solid var(--accent-cyan);
+        }
+
+        .stat-card.time {
+            border-left: 4px solid var(--accent-purple);
+        }
+
+        .stat-card-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-card.critical .stat-card-value { color: var(--accent-red); }
+        .stat-card.warning .stat-card-value { color: var(--accent-yellow); }
+        .stat-card.info .stat-card-value { color: var(--accent-cyan); }
+        .stat-card.time .stat-card-value { color: var(--accent-purple); }
+
+        .stat-card-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .filter-chip:hover {
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+
+        .filter-chip.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .filter-separator {
+            width: 1px;
+            height: 24px;
+            background: var(--border-color);
+            margin: 0 8px;
+        }
+
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .alert-group {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .alert-group:hover {
+            border-color: var(--accent-blue);
+        }
+
+        .alert-group.critical {
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .alert-group.warning {
+            border-left: 4px solid var(--accent-yellow);
+        }
+
+        .alert-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .alert-group-header:hover {
+            background: var(--bg-hover);
+        }
+
+        .alert-group-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .alert-severity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .alert-severity-icon.critical {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .alert-severity-icon.warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-yellow);
+        }
+
+        .alert-train-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .alert-train-meta {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-train-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .alert-group-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-count-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .alert-count-badge.critical {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .alert-count-badge.warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-yellow);
+        }
+
+        .alert-time-ago {
+            font-size: 13px;
+            color: var(--text-muted);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .expand-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .alert-group.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .alert-items {
+            display: none;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .alert-group.expanded .alert-items {
+            display: block;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px 14px 76px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .alert-item-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .alert-item-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .alert-item-dot.critical {
+            background: var(--accent-red);
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        .alert-item-dot.warning {
+            background: var(--accent-yellow);
+        }
+
+        .alert-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .alert-item-position {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert-item-confidence {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .alert-item-confidence strong {
+            color: var(--accent-yellow);
+        }
+
+        .alert-item-confidence strong.critical {
+            color: var(--accent-red);
+        }
+
+        .alert-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-item-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .quick-action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .quick-action-btn.view {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .quick-action-btn.view:hover {
+            background: #2563eb;
+        }
+
+        .bottom-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .refresh-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .refresh-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        .recurring-badge {
+            padding: 2px 6px;
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-card-value {
+                font-size: 28px;
+            }
+
+            .filter-bar {
+                gap: 6px;
+            }
+
+            .filter-chip {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+
+            .filter-separator {
+                display: none;
+            }
+
+            .alert-group-header {
+                padding: 12px 16px;
+            }
+
+            .alert-group-info {
+                gap: 12px;
+            }
+
+            .alert-severity-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .alert-train-info h3 {
+                font-size: 14px;
+            }
+
+            .alert-train-meta {
+                font-size: 11px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .alert-group-actions {
+                gap: 8px;
+            }
+
+            .alert-time-ago {
+                display: none;
+            }
+
+            .alert-item {
+                padding: 12px 16px 12px 52px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .alert-item-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .bottom-actions {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .action-buttons .btn {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .alert-count-badge {
+                padding: 4px 10px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <a href="00_alerts_dashboard.html" class="logo">
+                <div class="logo-icon">V</div>
+                <span class="logo-text">VICORE</span>
+            </a>
+            <nav class="nav-tabs">
+                <a href="00_alerts_dashboard.html" class="nav-tab active">Dashboard</a>
+                <a href="02_system_view.html" class="nav-tab">Train Passes</a>
+                <a href="05_audit_trail.html" class="nav-tab">Audit Trail</a>
+                <a href="06_rapports.html" class="nav-tab">Rapports</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="refresh-indicator">
+                <span class="refresh-dot"></span>
+                <span>Temps reel</span>
+            </div>
+            <div class="clock" id="clock">14:32:45</div>
+            <div class="lang-switch">
+                <button class="lang-btn active">FR</button>
+                <button class="lang-btn">EN</button>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">JD</div>
+                <div class="user-info">
+                    <span class="user-name">Jean Dupont</span>
+                    <span class="user-role">Superviseur</span>
+                </div>
+            </div>
+            <a href="01_login.html" class="logout-btn">Deconnexion</a>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav" id="mobileNav">
+        <a href="00_alerts_dashboard.html" class="mobile-nav-item active">Dashboard</a>
+        <a href="02_system_view.html" class="mobile-nav-item">Train Passes</a>
+        <a href="05_audit_trail.html" class="mobile-nav-item">Audit Trail</a>
+        <a href="06_rapports.html" class="mobile-nav-item">Rapports</a>
+        <div class="mobile-nav-divider"></div>
+        <a href="01_login.html" class="mobile-nav-item">Deconnexion</a>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <main class="content full-width">
+            <!-- Page Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <div>
+                    <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">Dashboard Alertes</h1>
+                    <p style="color: var(--text-muted); font-size: 14px;">Ressorts necessitant une verification manuelle</p>
+                </div>
+                <a href="02_system_view.html" class="btn btn-secondary">Voir tous les trains &rarr;</a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="dashboard-stats">
+                <div class="stat-card info">
+                    <div class="stat-card-value">12</div>
+                    <div class="stat-card-label">Alertes totales</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-card-value">8</div>
+                    <div class="stat-card-label">Ambre (Conf &lt; 0.5)</div>
+                </div>
+                <div class="stat-card critical">
+                    <div class="stat-card-value">4</div>
+                    <div class="stat-card-label">Rouge (Conf &lt; 0.3)</div>
+                </div>
+                <div class="stat-card time">
+                    <div class="stat-card-value">2h15</div>
+                    <div class="stat-card-label">Plus ancienne</div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <span class="filter-chip active">Toutes</span>
+                <span class="filter-chip">Voie D</span>
+                <span class="filter-chip">Voie E</span>
+                <span class="filter-separator"></span>
+                <span class="filter-chip">&lt; 1h</span>
+                <span class="filter-chip">&lt; 2h</span>
+                <span class="filter-chip">&lt; 4h</span>
+                <span class="filter-separator"></span>
+                <span class="filter-chip">Critiques d'abord</span>
+            </div>
+
+            <!-- Alert List -->
+            <div class="alert-list">
+                <!-- Alert Group 1 - Critical -->
+                <div class="alert-group critical expanded">
+                    <div class="alert-group-header" onclick="toggleAlertGroup(this)">
+                        <div class="alert-group-info">
+                            <div class="alert-severity-icon critical">&#9888;</div>
+                            <div class="alert-train-info">
+                                <h3>Train Pass #28825</h3>
+                                <div class="alert-train-meta">
+                                    <span>Voie D</span>
+                                    <span>18/01/2026 14:32</span>
+                                    <span>ETMR-9704-LOC2B</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert-group-actions">
+                            <span class="alert-count-badge critical">2 alertes</span>
+                            <span class="alert-time-ago">il y a 3 min</span>
+                            <span class="expand-icon">&#9660;</span>
+                        </div>
+                    </div>
+                    <div class="alert-items">
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot critical"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 7907 - Essieu 3 - FL (Front Left)</span>
+                                    <span class="alert-item-confidence">Confiance: <strong class="critical">0.18</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">14:32</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot warning"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 8125 - Essieu 2 - BR (Back Right)<span class="recurring-badge">Recurrent</span></span>
+                                    <span class="alert-item-confidence">Confiance: <strong>0.26</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">14:28</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Group 2 - Critical -->
+                <div class="alert-group critical">
+                    <div class="alert-group-header" onclick="toggleAlertGroup(this)">
+                        <div class="alert-group-info">
+                            <div class="alert-severity-icon critical">&#9888;</div>
+                            <div class="alert-train-info">
+                                <h3>Train Pass #28822</h3>
+                                <div class="alert-train-meta">
+                                    <span>Voie D</span>
+                                    <span>18/01/2026 13:42</span>
+                                    <span>ETMR-8501-AMC1B</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert-group-actions">
+                            <span class="alert-count-badge critical">1 critique</span>
+                            <span class="alert-time-ago">il y a 53 min</span>
+                            <span class="expand-icon">&#9660;</span>
+                        </div>
+                    </div>
+                    <div class="alert-items">
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot critical"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 8203 - Essieu 1 - FL (Front Left)</span>
+                                    <span class="alert-item-confidence">Confiance: <strong class="critical">0.12</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">13:42</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Group 3 - Warning -->
+                <div class="alert-group warning">
+                    <div class="alert-group-header" onclick="toggleAlertGroup(this)">
+                        <div class="alert-group-info">
+                            <div class="alert-severity-icon warning">&#9888;</div>
+                            <div class="alert-train-info">
+                                <h3>Train Pass #28819</h3>
+                                <div class="alert-train-meta">
+                                    <span>Voie E</span>
+                                    <span>18/01/2026 14:10</span>
+                                    <span>ETMR-9102-PTC3A</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert-group-actions">
+                            <span class="alert-count-badge warning">3 alertes</span>
+                            <span class="alert-time-ago">il y a 25 min</span>
+                            <span class="expand-icon">&#9660;</span>
+                        </div>
+                    </div>
+                    <div class="alert-items">
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot warning"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 9102 - Essieu 4 - BR (Back Right)</span>
+                                    <span class="alert-item-confidence">Confiance: <strong>0.45</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">14:10</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot warning"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 9102 - Essieu 4 - BL (Back Left)</span>
+                                    <span class="alert-item-confidence">Confiance: <strong>0.41</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">14:10</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot warning"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 9108 - Essieu 2 - FR (Front Right)</span>
+                                    <span class="alert-item-confidence">Confiance: <strong>0.38</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">14:08</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Group 4 - Warning -->
+                <div class="alert-group warning">
+                    <div class="alert-group-header" onclick="toggleAlertGroup(this)">
+                        <div class="alert-group-info">
+                            <div class="alert-severity-icon warning">&#9888;</div>
+                            <div class="alert-train-info">
+                                <h3>Train Pass #28815</h3>
+                                <div class="alert-train-meta">
+                                    <span>Voie D</span>
+                                    <span>18/01/2026 12:17</span>
+                                    <span>ETMR-7650-LOC1A</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert-group-actions">
+                            <span class="alert-count-badge warning">6 alertes</span>
+                            <span class="alert-time-ago">il y a 2h15</span>
+                            <span class="expand-icon">&#9660;</span>
+                        </div>
+                    </div>
+                    <div class="alert-items">
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot warning"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 7650 - Essieu 1 - FL (Front Left)</span>
+                                    <span class="alert-item-confidence">Confiance: <strong>0.42</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">12:17</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot warning"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 7650 - Essieu 1 - FR (Front Right)</span>
+                                    <span class="alert-item-confidence">Confiance: <strong>0.39</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">12:17</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                        <div class="alert-item" onclick="window.location.href='03_car_view.html'">
+                            <div class="alert-item-info">
+                                <div class="alert-item-dot warning"></div>
+                                <div class="alert-item-details">
+                                    <span class="alert-item-position">Vehicule 7651 - Essieu 3 - BL (Back Left)<span class="recurring-badge">Recurrent</span></span>
+                                    <span class="alert-item-confidence">Confiance: <strong>0.35</strong> - Unchecked</span>
+                                </div>
+                            </div>
+                            <div class="alert-item-actions">
+                                <span class="alert-item-time">12:15</span>
+                                <button class="quick-action-btn view">Inspecter</button>
+                            </div>
+                        </div>
+                        <!-- Plus d'alertes cachees -->
+                        <div style="padding: 12px 20px 12px 76px; color: var(--text-muted); font-size: 13px;">
+                            + 3 autres alertes...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="bottom-actions">
+                <div class="pagination-info">
+                    Affichage de 12 alertes sur 4 trains
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="alert('Traitement de la plus ancienne alerte...')">
+                        Traiter la plus ancienne
+                    </button>
+                    <button class="btn btn-primary" onclick="alert('Marquage de toutes les alertes comme lues...')">
+                        Marquer toutes comme vues
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Clock update
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Toggle alert group
+        function toggleAlertGroup(header) {
+            const group = header.closest('.alert-group');
+            group.classList.toggle('expanded');
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileNav = document.getElementById('mobileNav');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            mobileNav.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+        }
+
+        // Expand all groups by default on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // First group is already expanded via HTML class
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICORE V2 - Mockups Navigation</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .mockup-nav {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .mockup-logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 16px;
+            box-shadow: var(--neon-glow);
+        }
+        .mockup-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .mockup-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        .mockup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s;
+        }
+        .mockup-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-4px);
+            box-shadow: var(--neon-glow);
+        }
+        .mockup-card-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .mockup-card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .mockup-card-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .mockup-footer {
+            margin-top: 60px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .flow-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border-radius: 30px;
+            font-size: 14px;
+        }
+        .flow-step {
+            padding: 4px 12px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            color: var(--text-secondary);
+        }
+        .flow-arrow {
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-nav">
+        <div class="mockup-logo">V</div>
+        <h1 class="mockup-title">VICORE V2</h1>
+        <p class="mockup-subtitle">VIsualisation COntrole REssorts - Mockups Interactifs</p>
+
+        <div class="flow-indicator">
+            <span class="flow-step">Login</span>
+            <span class="flow-arrow">&rarr;</span>
+            <span class="flow-step">System View</span>
+            <span class="flow-arrow">&rarr;</span>
+            <span class="flow-step">Car View</span>
+            <span class="flow-arrow">&rarr;</span>
+            <span class="flow-step">Historique</span>
+        </div>
+
+        <div class="mockup-grid">
+            <a href="01_login.html" class="mockup-card">
+                <div class="mockup-card-icon">&#128274;</div>
+                <h3 class="mockup-card-title">1. Page de Connexion</h3>
+                <p class="mockup-card-desc">
+                    Authentification SSO Eurotunnel avec design moderne et branding VICORE.
+                </p>
+            </a>
+
+            <a href="02_system_view.html" class="mockup-card">
+                <div class="mockup-card-icon">&#128652;</div>
+                <h3 class="mockup-card-title">2. System View</h3>
+                <p class="mockup-card-desc">
+                    Vue principale avec liste des train passes et grille des wagons. Statistiques et alertes.
+                </p>
+            </a>
+
+            <a href="03_car_view.html" class="mockup-card">
+                <div class="mockup-card-icon">&#128269;</div>
+                <h3 class="mockup-card-title">3. Car View (Inspection)</h3>
+                <p class="mockup-card-desc">
+                    Visualisation des images de ressorts avec controles, diagramme bogie et confirmation.
+                </p>
+            </a>
+
+            <a href="04_historique_ressort.html" class="mockup-card">
+                <div class="mockup-card-icon">&#128197;</div>
+                <h3 class="mockup-card-title">4. Historique Ressort</h3>
+                <p class="mockup-card-desc">
+                    Visualisation des photos d'un meme ressort sur plusieurs passages avec comparaison.
+                </p>
+            </a>
+
+            <a href="05_audit_trail.html" class="mockup-card">
+                <div class="mockup-card-icon">&#128203;</div>
+                <h3 class="mockup-card-title">5. Audit Trail</h3>
+                <p class="mockup-card-desc">
+                    Historique complet des operations pour les superviseurs avec filtres et export.
+                </p>
+            </a>
+
+            <a href="06_rapports.html" class="mockup-card">
+                <div class="mockup-card-icon">&#128200;</div>
+                <h3 class="mockup-card-title">6. Rapports</h3>
+                <p class="mockup-card-desc">
+                    Generation de rapports d'activite avec apercu, statistiques et telechargement.
+                </p>
+            </a>
+        </div>
+
+        <div class="mockup-footer">
+            <p>VICORE V2 - Mockups de demonstration</p>
+            <p style="margin-top: 8px;">
+                Ces mockups representent l'interface utilisateur prevue pour le systeme VICORE V2.<br>
+                Navigation fonctionnelle entre les pages. Donnees fictives pour demonstration.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

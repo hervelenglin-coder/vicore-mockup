@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICORE - Connexion</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .login-lang-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 4px;
+        }
+        .login-lang-btn {
+            padding: 6px 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: transparent;
+            color: #94a3b8;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .login-lang-btn:hover {
+            border-color: rgba(255,255,255,0.4);
+            color: #e2e8f0;
+        }
+        .login-lang-btn.active {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: #06b6d4;
+            color: #06b6d4;
+        }
+        .login-version {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <!-- Language Selector -->
+        <div class="login-lang-switch">
+            <button class="login-lang-btn" data-lang="fr" onclick="setLanguage('fr')">FR</button>
+            <button class="login-lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+        </div>
+
+        <div class="login-container">
+            <div class="login-branding">
+                <div class="login-logo">V</div>
+                <h1 class="login-title">VICORE</h1>
+                <p class="login-subtitle" data-i18n="subtitle">VIsualisation COntrole REssorts</p>
+            </div>
+            <div class="login-form-section">
+                <h2 class="login-welcome" data-i18n="welcome">Bienvenue</h2>
+                <p class="login-instruction" data-i18n="instruction">
+                    Cliquez sur le bouton ci-dessous pour vous connecter avec votre compte Eurotunnel
+                </p>
+
+                <a href="02_system_view.html" class="sso-button" style="text-decoration: none;">
+                    <div class="sso-icon"></div>
+                    <span data-i18n="sso_button">Connexion SSO Eurotunnel</span>
+                </a>
+
+                <div class="eurotunnel-logo">
+                    <svg width="120" height="30" viewBox="0 0 120 30" style="opacity: 0.5;">
+                        <text x="0" y="20" fill="#64748b" font-family="Arial" font-size="12">EUROTUNNEL</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Version Footer -->
+        <div class="login-version">VICORE v2.0.0</div>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            fr: {
+                subtitle: 'VIsualisation COntrole REssorts',
+                welcome: 'Bienvenue',
+                instruction: 'Cliquez sur le bouton ci-dessous pour vous connecter avec votre compte Eurotunnel',
+                sso_button: 'Connexion SSO Eurotunnel'
+            },
+            en: {
+                subtitle: 'Spring Control VIsualization',
+                welcome: 'Welcome',
+                instruction: 'Click the button below to login with your Eurotunnel account',
+                sso_button: 'Eurotunnel SSO Login'
+            }
+        };
+
+        // Get browser language and default to FR if French, otherwise EN
+        function getBrowserLanguage() {
+            const lang = navigator.language || navigator.userLanguage;
+            return lang.toLowerCase().startsWith('fr') ? 'fr' : 'en';
+        }
+
+        // Set language
+        function setLanguage(lang) {
+            // Update active button state
+            document.querySelectorAll('.login-lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Update all translatable elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Store preference
+            localStorage.setItem('vicore-lang', lang);
+        }
+
+        // Initialize language on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('vicore-lang');
+            const lang = savedLang || getBrowserLanguage();
+            setLanguage(lang);
+        });
+    </script>
+</body>
+</html>

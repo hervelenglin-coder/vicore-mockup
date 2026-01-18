@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICORE - System View</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="02_system_view.html" class="logo">
+                <div class="logo-icon">V</div>
+                <span class="logo-text">VICORE</span>
+            </a>
+            <nav class="nav-tabs">
+                <a href="02_system_view.html" class="nav-tab active">Train Passes</a>
+                <a href="05_audit_trail.html" class="nav-tab">Audit Trail</a>
+                <a href="06_rapports.html" class="nav-tab">Rapports</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator" onclick="toggleStatusPanel()">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+            <div class="clock" id="clock">14:32:45</div>
+            <div class="lang-switch">
+                <button class="lang-btn active">FR</button>
+                <button class="lang-btn">EN</button>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">JD</div>
+                <div class="user-info">
+                    <span class="user-name">Jean Dupont</span>
+                    <span class="user-role">Superviseur</span>
+                </div>
+            </div>
+            <a href="01_login.html" class="logout-btn">Deconnexion</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Sidebar - Train Passes List -->
+        <aside class="sidebar">
+            <div class="card" style="padding: 12px; margin-bottom: 16px;">
+                <input type="text" class="form-input" placeholder="Rechercher un train..." style="margin: 0;">
+            </div>
+
+            <!-- Voie D (anciennement Folkestone) - Note: Les équipements sont dynamiques et configurables depuis la base de données -->
+            <div class="installation-group">
+                <div class="installation-header">
+                    <span class="installation-icon"></span>
+                    <span class="installation-name">Voie D</span>
+                </div>
+
+                <div class="train-pass-item active" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">9N57 - 1234</span>
+                        <span class="train-time">18/01/2026 14:32</span>
+                    </div>
+                    <span class="train-status warning">2 alertes</span>
+                </div>
+
+                <div class="train-pass-item" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">2K18 - 5678</span>
+                        <span class="train-time">18/01/2026 14:15</span>
+                    </div>
+                    <span class="train-status ok">OK</span>
+                </div>
+
+                <div class="train-pass-item" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">1M00 - 9012</span>
+                        <span class="train-time">18/01/2026 13:58</span>
+                    </div>
+                    <span class="train-status ok">OK</span>
+                </div>
+
+                <div class="train-pass-item" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">4R56 - 3456</span>
+                        <span class="train-time">18/01/2026 13:42</span>
+                    </div>
+                    <span class="train-status alert">1 critique</span>
+                </div>
+
+                <div class="train-pass-item" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">7B23 - 7890</span>
+                        <span class="train-time">18/01/2026 13:25</span>
+                    </div>
+                    <span class="train-status ok">OK</span>
+                </div>
+            </div>
+
+            <!-- Voie E (anciennement Coquelles) - Note: Les équipements sont dynamiques et configurables depuis la base de données -->
+            <div class="installation-group">
+                <div class="installation-header">
+                    <span class="installation-icon" style="background: var(--accent-purple);"></span>
+                    <span class="installation-name">Voie E</span>
+                </div>
+
+                <div class="train-pass-item" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">3F45 - 2345</span>
+                        <span class="train-time">18/01/2026 14:28</span>
+                    </div>
+                    <span class="train-status ok">OK</span>
+                </div>
+
+                <div class="train-pass-item" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">8H12 - 6789</span>
+                        <span class="train-time">18/01/2026 14:10</span>
+                    </div>
+                    <span class="train-status warning">1 alerte</span>
+                </div>
+
+                <div class="train-pass-item" onclick="selectTrain(this)">
+                    <div class="train-pass-info">
+                        <span class="train-code">5J78 - 0123</span>
+                        <span class="train-time">18/01/2026 13:55</span>
+                    </div>
+                    <span class="train-status ok">OK</span>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 16px;">
+                Charger plus...
+            </button>
+        </aside>
+
+        <!-- Content - Wagon Grid -->
+        <main class="content">
+            <div class="train-details">
+                <div class="train-header">
+                    <div>
+                        <h1 class="train-title">9N57 - 1234</h1>
+                        <p class="train-meta">18 Janvier 2026 a 14:32:45 - Direction France > UK - Voie D</p>
+                        <p class="train-meta" style="margin-top: 4px;">
+                            <span style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 2px 8px; border-radius: 4px; font-size: 11px;">Direction: Normal</span>
+                        </p>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item springs">
+                            <span class="stat-value">192</span>
+                            <span class="stat-label">Ressorts</span>
+                        </div>
+                        <div class="stat-item warnings">
+                            <span class="stat-value">2</span>
+                            <span class="stat-label">Alertes</span>
+                        </div>
+                        <div class="stat-item criticals">
+                            <span class="stat-value">0</span>
+                            <span class="stat-label">Critiques</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Composition du train - 12 wagons</h2>
+                    <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); align-items: center;">
+                        <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-green); border-radius: 3px; margin-right: 4px;"></span> OK</span>
+                        <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-yellow); border-radius: 3px; margin-right: 4px;"></span> Alerte</span>
+                        <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-red); border-radius: 3px; margin-right: 4px;"></span> Critique</span>
+                        <span><span style="display: inline-block; width: 12px; height: 12px; background: var(--accent-purple); border-radius: 3px; margin-right: 4px;"></span> Confirme</span>
+                        <button onclick="openLegendModal()" style="background: transparent; border: 1px solid var(--border-color); color: var(--accent-cyan); padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+                            <span style="font-size: 14px;">?</span> Legende
+                        </button>
+                    </div>
+                </div>
+
+                <div class="wagon-grid">
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W1</span>
+                        <span class="wagon-id">RFID: 4521</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Loco</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card warning">
+                        <span class="wagon-number">W2</span>
+                        <span class="wagon-id">RFID: 4522</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Chargeur</span>
+                        <span class="wagon-status-icon">&#9888;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W3</span>
+                        <span class="wagon-id">RFID: 4523</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W4</span>
+                        <span class="wagon-id">RFID: 4524</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card warning">
+                        <span class="wagon-number">W5</span>
+                        <span class="wagon-id">RFID: 4525</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#9888;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W6</span>
+                        <span class="wagon-id">RFID: 4526</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W7</span>
+                        <span class="wagon-id">RFID: 4527</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card confirmed">
+                        <span class="wagon-number">W8</span>
+                        <span class="wagon-id">RFID: 4528</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#10004;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W9</span>
+                        <span class="wagon-id">RFID: 4529</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W10</span>
+                        <span class="wagon-id">RFID: 4530</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Porteur</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W11</span>
+                        <span class="wagon-id">RFID: 4531</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Chargeur</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                    <a href="03_car_view.html" class="wagon-card ok">
+                        <span class="wagon-number">W12</span>
+                        <span class="wagon-id">RFID: 4532</span>
+                        <span class="wagon-type" style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Loco</span>
+                        <span class="wagon-status-icon">&#10003;</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Alertes recentes sur ce passage</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Wagon</th>
+                                <th>Position</th>
+                                <th>Type</th>
+                                <th>Conf Code</th>
+                                <th>Heure</th>
+                                <th>Statut</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>W2</strong></td>
+                                <td>Bogie 1 - Essieu 2 - Gauche - Menant</td>
+                                <td>Ressort incertain</td>
+                                <td><span style="color: var(--accent-yellow);">2</span></td>
+                                <td>14:32:47</td>
+                                <td><span class="train-status warning">A verifier</span></td>
+                                <td><a href="03_car_view.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Inspecter</a></td>
+                            </tr>
+                            <tr>
+                                <td><strong>W5</strong></td>
+                                <td>Bogie 2 - Essieu 1 - Droit - Mene</td>
+                                <td>Ressort potentiellement manquant</td>
+                                <td><span style="color: var(--accent-yellow);">2</span></td>
+                                <td>14:32:52</td>
+                                <td><span class="train-status warning">A verifier</span></td>
+                                <td><a href="03_car_view.html" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Inspecter</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Legend Modal -->
+    <div class="modal-overlay" id="legendModal" style="display: none;">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Legende des statuts</h3>
+                <button class="modal-close" onclick="closeLegendModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-green);">
+                        <span style="display: inline-block; width: 20px; height: 20px; background: var(--accent-green); border-radius: 4px; flex-shrink: 0;"></span>
+                        <div>
+                            <strong style="color: var(--accent-green);">OK (Vert)</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">
+                                Tous les ressorts detectes presents avec confiance haute (Conf Code 1). Aucune action requise.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-yellow);">
+                        <span style="display: inline-block; width: 20px; height: 20px; background: var(--accent-yellow); border-radius: 4px; flex-shrink: 0;"></span>
+                        <div>
+                            <strong style="color: var(--accent-yellow);">Alerte (Jaune)</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">
+                                Au moins un ressort necessite verification (Conf Code 2). L'algorithme a detecte une incertitude. Une verification manuelle est recommandee.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-red);">
+                        <span style="display: inline-block; width: 20px; height: 20px; background: var(--accent-red); border-radius: 4px; flex-shrink: 0;"></span>
+                        <div>
+                            <strong style="color: var(--accent-red);">Critique (Rouge)</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">
+                                Au moins un ressort potentiellement manquant (Conf Code 3). Verification immediate requise. Le train ne doit pas repartir sans confirmation.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-purple);">
+                        <span style="display: inline-block; width: 20px; height: 20px; background: var(--accent-purple); border-radius: 4px; flex-shrink: 0;"></span>
+                        <div>
+                            <strong style="color: var(--accent-purple);">Confirme (Violet)</strong>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">
+                                Statut confirme manuellement par un operateur. L'action est tracee dans l'audit trail avec l'identite de l'operateur.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                    <strong style="font-size: 13px;">Codes de confiance (Conf Code):</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary);">
+                        <li><strong>0</strong> - Confirme manuellement</li>
+                        <li><strong>1</strong> - Haute confiance (>90%)</li>
+                        <li><strong>2</strong> - Confiance moyenne (60-90%)</li>
+                        <li><strong>3</strong> - Faible confiance (&lt;60%)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeLegendModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Clock update
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Train selection
+        function selectTrain(element) {
+            document.querySelectorAll('.train-pass-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        // Legend modal
+        function openLegendModal() {
+            document.getElementById('legendModal').style.display = 'flex';
+        }
+
+        function closeLegendModal() {
+            document.getElementById('legendModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

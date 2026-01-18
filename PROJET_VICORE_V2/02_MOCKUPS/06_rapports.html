@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICORE - Rapports</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .reports-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 24px;
+        }
+        .preview-stat {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .preview-stat-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        .preview-stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .chart-placeholder {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 24px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .chart-bars {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .chart-bar {
+            flex: 1;
+            background: var(--accent-cyan);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+        }
+        .chart-bar::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .top-users {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .top-user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .top-user-item:last-child {
+            border-bottom: none;
+        }
+        .top-user-rank {
+            width: 24px;
+            height: 24px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+        .top-user-rank.gold { background: #f59e0b; }
+        .top-user-rank.silver { background: #94a3b8; }
+        .top-user-rank.bronze { background: #cd7f32; }
+        .report-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .report-status.completed {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+        .report-status.processing {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-yellow);
+        }
+        .download-btns {
+            display: flex;
+            gap: 4px;
+        }
+        .download-btn {
+            padding: 4px 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .download-btn:hover {
+            background: var(--bg-hover);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="02_system_view.html" class="logo">
+                <div class="logo-icon">V</div>
+                <span class="logo-text">VICORE</span>
+            </a>
+            <nav class="nav-tabs">
+                <a href="02_system_view.html" class="nav-tab">Train Passes</a>
+                <a href="05_audit_trail.html" class="nav-tab">Audit Trail</a>
+                <a href="06_rapports.html" class="nav-tab active">Rapports</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+            <div class="clock" id="clock">14:45:33</div>
+            <div class="lang-switch">
+                <button class="lang-btn active">FR</button>
+                <button class="lang-btn">EN</button>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">JD</div>
+                <div class="user-info">
+                    <span class="user-name">Jean Dupont</span>
+                    <span class="user-role">Superviseur</span>
+                </div>
+            </div>
+            <a href="01_login.html" class="logout-btn">Deconnexion</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <main class="content full-width">
+            <div class="reports-layout">
+                <!-- Left Panel - Report Generator -->
+                <div>
+                    <div class="card">
+                        <h2 class="card-title" style="margin-bottom: 20px;">Generer un Rapport</h2>
+
+                        <div class="form-group">
+                            <label class="form-label">Date de debut *</label>
+                            <input type="date" class="form-input" value="2026-01-01">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Date de fin *</label>
+                            <input type="date" class="form-input" value="2026-01-18">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Type de rapport *</label>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px; background: var(--bg-secondary); border-radius: 8px; border: 2px solid var(--accent-blue);">
+                                    <input type="radio" name="reportType" checked>
+                                    <div>
+                                        <div style="font-weight: 600;">Synthese</div>
+                                        <div style="font-size: 12px; color: var(--text-muted);">Statistiques globales et resume</div>
+                                    </div>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px; background: var(--bg-secondary); border-radius: 8px; border: 2px solid transparent;">
+                                    <input type="radio" name="reportType">
+                                    <div>
+                                        <div style="font-weight: 600;">Detail</div>
+                                        <div style="font-size: 12px; color: var(--text-muted);">Liste complete de toutes les operations</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Filtres optionnels</label>
+                            <select class="form-select" style="margin-bottom: 8px;">
+                                <option value="">Tous les utilisateurs</option>
+                                <option value="jdupont">Jean Dupont</option>
+                                <option value="mmartin">Marie Martin</option>
+                                <option value="abernard">Antoine Bernard</option>
+                            </select>
+                            <select class="form-select">
+                                <option value="">Tous les types d'operations</option>
+                                <option value="confirmation">Confirmations uniquement</option>
+                                <option value="cancellation">Annulations uniquement</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 8px;" onclick="generateReport()">
+                            Generer le rapport
+                        </button>
+
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">
+                            * Periode maximale: 90 jours. Les rapports de plus de 30 jours seront generes en arriere-plan.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Preview & History -->
+                <div>
+                    <!-- Preview -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Apercu - Periode: 01/01/2026 au 18/01/2026</h2>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+                            <div class="preview-stat">
+                                <div class="preview-stat-value" style="color: var(--accent-cyan);">245</div>
+                                <div class="preview-stat-label">Operations totales</div>
+                            </div>
+                            <div class="preview-stat">
+                                <div class="preview-stat-value" style="color: var(--accent-blue);">89</div>
+                                <div class="preview-stat-label">Connexions</div>
+                            </div>
+                            <div class="preview-stat">
+                                <div class="preview-stat-value" style="color: var(--accent-green);">65</div>
+                                <div class="preview-stat-label">Confirmations</div>
+                            </div>
+                            <div class="preview-stat">
+                                <div class="preview-stat-value" style="color: var(--accent-red);">6</div>
+                                <div class="preview-stat-label">Annulations</div>
+                            </div>
+                        </div>
+
+                        <!-- Chart -->
+                        <div class="chart-placeholder">
+                            <div class="chart-title">Activite par jour</div>
+                            <div class="chart-bars">
+                                <div class="chart-bar" style="height: 45%;" data-label="11"></div>
+                                <div class="chart-bar" style="height: 62%;" data-label="12"></div>
+                                <div class="chart-bar" style="height: 35%;" data-label="13"></div>
+                                <div class="chart-bar" style="height: 78%;" data-label="14"></div>
+                                <div class="chart-bar" style="height: 55%;" data-label="15"></div>
+                                <div class="chart-bar" style="height: 90%;" data-label="16"></div>
+                                <div class="chart-bar" style="height: 68%;" data-label="17"></div>
+                                <div class="chart-bar" style="height: 82%; background: var(--accent-green);" data-label="18"></div>
+                            </div>
+                        </div>
+
+                        <!-- Top Users -->
+                        <div class="top-users" style="margin-top: 20px;">
+                            <div class="chart-title">Top utilisateurs</div>
+                            <div class="top-user-item">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="top-user-rank gold">1</span>
+                                    <span>Jean Dupont</span>
+                                </div>
+                                <span style="font-weight: 600; color: var(--accent-cyan);">45 ops</span>
+                            </div>
+                            <div class="top-user-item">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="top-user-rank silver">2</span>
+                                    <span>Marie Martin</span>
+                                </div>
+                                <span style="font-weight: 600; color: var(--accent-cyan);">32 ops</span>
+                            </div>
+                            <div class="top-user-item">
+                                <div style="display: flex; align-items: center;">
+                                    <span class="top-user-rank bronze">3</span>
+                                    <span>Antoine Bernard</span>
+                                </div>
+                                <span style="font-weight: 600; color: var(--accent-cyan);">28 ops</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Reports -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Mes Rapports Recents</h2>
+                        </div>
+
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date generation</th>
+                                        <th>Periode</th>
+                                        <th>Type</th>
+                                        <th>Statut</th>
+                                        <th>Expire le</th>
+                                        <th>Telecharger</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>15/01/2026 16:30</td>
+                                        <td>01/01 - 15/01/2026</td>
+                                        <td>Synthese</td>
+                                        <td><span class="report-status completed">Termine</span></td>
+                                        <td>15/04/2026</td>
+                                        <td>
+                                            <div class="download-btns">
+                                                <button class="download-btn">PDF</button>
+                                                <button class="download-btn">CSV</button>
+                                                <button class="download-btn">XLS</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>01/01/2026 09:15</td>
+                                        <td>01/12 - 31/12/2025</td>
+                                        <td>Detail</td>
+                                        <td><span class="report-status completed">Termine</span></td>
+                                        <td>01/04/2026</td>
+                                        <td>
+                                            <div class="download-btns">
+                                                <button class="download-btn">PDF</button>
+                                                <button class="download-btn">CSV</button>
+                                                <button class="download-btn">XLS</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>15/12/2025 14:22</td>
+                                        <td>15/11 - 15/12/2025</td>
+                                        <td>Synthese</td>
+                                        <td><span class="report-status completed">Termine</span></td>
+                                        <td>15/03/2026</td>
+                                        <td>
+                                            <div class="download-btns">
+                                                <button class="download-btn">PDF</button>
+                                                <button class="download-btn">CSV</button>
+                                                <button class="download-btn">XLS</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="successModal" style="display: none;">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Rapport genere avec succes</h3>
+                <button class="modal-close" onclick="closeSuccessModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; padding: 20px;">
+                    <div style="width: 80px; height: 80px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; color: var(--accent-green);">&#10003;</div>
+                    <h3 style="margin-bottom: 8px;">Rapport pret!</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                        Votre rapport pour la periode du 01/01/2026 au 18/01/2026 a ete genere.
+                    </p>
+                    <div style="display: flex; justify-content: center; gap: 12px;">
+                        <button class="btn btn-primary">Telecharger PDF</button>
+                        <button class="btn btn-secondary">Telecharger CSV</button>
+                        <button class="btn btn-secondary">Telecharger Excel</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSuccessModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Generate report
+        function generateReport() {
+            document.getElementById('successModal').style.display = 'flex';
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

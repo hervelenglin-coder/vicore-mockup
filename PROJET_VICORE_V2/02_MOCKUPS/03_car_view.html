@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VICORE - Inspection Wagon W2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .spring-image-mock {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            position: relative;
+        }
+        .spring-image-mock::before {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 200px;
+            border: 8px solid #4a5568;
+            border-radius: 60px;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 8px,
+                #4a5568 8px,
+                #4a5568 12px
+            );
+        }
+        .spring-image-mock::after {
+            content: 'Ressort - Bogie 1 - Essieu 2 - Gauche - Menant';
+            position: absolute;
+            bottom: 20px;
+            font-size: 12px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        .zoom-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--accent-cyan);
+        }
+        .confidence-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+        .confidence-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .confidence-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-yellow);
+        }
+        .alert-banner {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--accent-yellow);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .alert-banner-icon {
+            font-size: 24px;
+        }
+        .alert-banner-text {
+            flex: 1;
+        }
+        .alert-banner-title {
+            font-weight: 600;
+            color: var(--accent-yellow);
+        }
+        .alert-banner-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <a href="02_system_view.html" class="logo">
+                <div class="logo-icon">V</div>
+                <span class="logo-text">VICORE</span>
+            </a>
+            <nav class="nav-tabs">
+                <a href="02_system_view.html" class="nav-tab active">Train Passes</a>
+                <a href="05_audit_trail.html" class="nav-tab">Audit Trail</a>
+                <a href="06_rapports.html" class="nav-tab">Rapports</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>Online</span>
+            </div>
+            <div class="clock" id="clock">14:35:12</div>
+            <div class="lang-switch">
+                <button class="lang-btn active">FR</button>
+                <button class="lang-btn">EN</button>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">JD</div>
+                <div class="user-info">
+                    <span class="user-name">Jean Dupont</span>
+                    <span class="user-role">Superviseur</span>
+                </div>
+            </div>
+            <a href="01_login.html" class="logout-btn">Deconnexion</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <main class="content full-width">
+            <!-- Breadcrumb -->
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted);">
+                <a href="02_system_view.html" style="color: var(--accent-cyan); text-decoration: none;">9N57 - 1234</a>
+                <span>/</span>
+                <span>Wagon W2</span>
+                <span>/</span>
+                <span style="color: var(--text-primary);">Bogie 1 - Essieu 2 - Gauche - Menant</span>
+            </div>
+
+            <!-- Alert Banner -->
+            <div class="alert-banner">
+                <span class="alert-banner-icon">&#9888;</span>
+                <div class="alert-banner-text">
+                    <div class="alert-banner-title">Ressort necessitant verification</div>
+                    <div class="alert-banner-desc">Le systeme a detecte une incertitude sur ce ressort (Conf Code: 2). Veuillez verifier visuellement et confirmer le statut.</div>
+                </div>
+                <button class="btn btn-primary" onclick="openConfirmModal()">Confirmer le statut</button>
+            </div>
+
+            <div class="car-view-layout">
+                <!-- Wagon Navigation -->
+                <nav class="wagon-nav">
+                    <a href="#" class="wagon-nav-item ok">
+                        <span style="font-weight: 600;">W1</span>
+                        <span style="font-size: 10px; color: var(--text-muted);">OK</span>
+                    </a>
+                    <a href="#" class="wagon-nav-item warning active">
+                        <span style="font-weight: 600;">W2</span>
+                        <span style="font-size: 10px; color: var(--accent-yellow);">!</span>
+                    </a>
+                    <a href="#" class="wagon-nav-item ok">
+                        <span style="font-weight: 600;">W3</span>
+                        <span style="font-size: 10px; color: var(--text-muted);">OK</span>
+                    </a>
+                    <a href="#" class="wagon-nav-item ok">
+                        <span style="font-weight: 600;">W4</span>
+                        <span style="font-size: 10px; color: var(--text-muted);">OK</span>
+                    </a>
+                    <a href="#" class="wagon-nav-item warning">
+                        <span style="font-weight: 600;">W5</span>
+                        <span style="font-size: 10px; color: var(--accent-yellow);">!</span>
+                    </a>
+                    <a href="#" class="wagon-nav-item ok">
+                        <span style="font-weight: 600;">W6</span>
+                        <span style="font-size: 10px; color: var(--text-muted);">OK</span>
+                    </a>
+                    <a href="#" class="wagon-nav-item ok">
+                        <span style="font-weight: 600;">W7</span>
+                        <span style="font-size: 10px; color: var(--text-muted);">OK</span>
+                    </a>
+                    <a href="#" class="wagon-nav-item ok" style="border-left-color: var(--accent-purple);">
+                        <span style="font-weight: 600;">W8</span>
+                        <span style="font-size: 10px; color: var(--accent-purple);">&#10004;</span>
+                    </a>
+                </nav>
+
+                <!-- Spring Viewer -->
+                <div class="spring-viewer">
+                    <div class="viewer-header">
+                        <div>
+                            <span class="spring-position">Ressort 9/16 - Position: Bogie 1 / Essieu 2 / Gauche / Menant</span>
+                        </div>
+                        <span class="spring-status-badge warning">Conf Code: 2 - Incertain</span>
+                    </div>
+
+                    <div class="image-container">
+                        <div class="spring-image-mock">
+                            <div class="zoom-indicator">Zoom: 100%</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-label">Niveau de confiance</div>
+                                <div class="confidence-value">72%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="image-controls">
+                        <div class="control-group">
+                            <div class="control-label">Contraste</div>
+                            <input type="range" class="slider" value="50">
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label">Luminosite</div>
+                            <input type="range" class="slider" value="50">
+                        </div>
+                        <div class="control-group">
+                            <div class="control-label">Zoom</div>
+                            <input type="range" class="slider" value="50">
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="nav-btn">&larr; Precedent</button>
+                        <a href="04_historique_ressort.html" class="nav-btn" style="text-decoration: none; text-align: center;">Historique</a>
+                        <button class="nav-btn">Suivant &rarr;</button>
+                    </div>
+                </div>
+
+                <!-- Bogie Panel -->
+                <div class="bogie-panel">
+                    <div class="bogie-info">
+                        <div class="bogie-rfid">RFID: 4522 | Coupon: ET-2026-4522</div>
+                        <h3 class="bogie-title">Wagon W2 - Chargeur</h3>
+                    </div>
+
+                    <!-- Note: Structure du wagon
+                         - 2 bogies par wagon (Avant/Arriere)
+                         - 2 essieux par bogie
+                         - 2 roues par essieu (Gauche/Droite)
+                         - 2 ressorts par roue (Menant/Mene)
+                         Total: 2 x 2 x 2 x 2 = 16 ressorts par wagon
+                    -->
+                    <div class="bogie-diagram">
+                        <div class="bogie-section">
+                            <div class="bogie-label">Bout 1 - Bogie Avant (Leading)</div>
+
+                            <!-- Essieu 1 -->
+                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 1</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <!-- Roue Gauche -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                    <!-- Axe -->
+                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
+                                    <!-- Roue Droite -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Essieu 2 -->
+                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px;">
+                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 2</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <!-- Roue Gauche -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot warning active" title="Menant - ALERTE" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                    <!-- Axe -->
+                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
+                                    <!-- Roue Droite -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bogie-section">
+                            <div class="bogie-label">Bout 2 - Bogie Arriere (Trailing)</div>
+
+                            <!-- Essieu 1 -->
+                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 1</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <!-- Roue Gauche -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                    <!-- Axe -->
+                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
+                                    <!-- Roue Droite -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Essieu 2 -->
+                            <div style="background: var(--bg-card); border-radius: 8px; padding: 12px;">
+                                <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">Essieu 2</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <!-- Roue Gauche -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Gauche</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                    <!-- Axe -->
+                                    <div style="flex: 1; height: 3px; background: var(--text-muted); margin: 0 8px;"></div>
+                                    <!-- Roue Droite -->
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 4px;">Droite</div>
+                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+                                            <div class="spring-dot ok" title="Menant" style="width: 14px; height: 14px;"></div>
+                                            <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--text-muted);"></div>
+                                            <div class="spring-dot ok" title="Mene" style="width: 14px; height: 14px;"></div>
+                                        </div>
+                                        <div style="font-size: 8px; color: var(--text-muted); margin-top: 2px;">M | m</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 20px; background: var(--bg-secondary); padding: 10px; border-radius: 6px;">
+                        <strong>Legende:</strong><br>
+                        <span style="color: var(--accent-cyan);">M</span> = Menant (Leading) | <span style="color: var(--accent-cyan);">m</span> = Mene (Trailing)<br>
+                        Cliquez sur un ressort pour afficher son image
+                    </div>
+
+                    <a href="02_system_view.html" class="back-link">
+                        &larr; Retour a la liste des wagons
+                    </a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmer le statut du ressort</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    Examinez toutes les images disponibles pour ce ressort et confirmez son statut.
+                </p>
+
+                <!-- Image grid -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--accent-cyan);">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 1</span>
+                    </div>
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 2</span>
+                    </div>
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 3</span>
+                    </div>
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 4</span>
+                    </div>
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 5</span>
+                    </div>
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 6</span>
+                    </div>
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 7</span>
+                    </div>
+                    <div style="aspect-ratio: 1; background: var(--bg-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: var(--text-muted); font-size: 12px;">Cam 8</span>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-secondary); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                    <strong style="display: block; margin-bottom: 8px;">Informations:</strong>
+                    <div style="font-size: 13px; color: var(--text-secondary);">
+                        <div>Wagon: W2 (RFID: 4522)</div>
+                        <div>Position: Bogie 1 - Essieu 2 - Gauche - Menant</div>
+                        <div>Conf Code actuel: 2 (Incertain)</div>
+                        <div>Detection: 18/01/2026 14:32:47</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">Incertain - Fermer</button>
+                <button class="btn btn-success" onclick="confirmPresent()">Ressort Present</button>
+                <button class="btn btn-danger" onclick="confirmMissing()">Ressort Manquant</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('fr-FR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Modal
+        function openConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        function confirmPresent() {
+            alert('Ressort confirme PRESENT. Le statut a ete mis a jour.');
+            closeConfirmModal();
+            window.location.href = '02_system_view.html';
+        }
+
+        function confirmMissing() {
+            alert('Ressort confirme MANQUANT. Une alerte a ete generee.');
+            closeConfirmModal();
+            window.location.href = '02_system_view.html';
+        }
+    </script>
+</body>
+</html>

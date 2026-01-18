@@ -1,23 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "PROJET_VICORE_V2/02_MOCKUPS/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "^/$",
-      "dest": "/PROJET_VICORE_V2/02_MOCKUPS/index.html"
-    },
-    {
-      "src": "/mockups/(.*)",
-      "dest": "/PROJET_VICORE_V2/02_MOCKUPS/$1"
-    },
-    {
-      "src": "/mockups",
-      "dest": "/PROJET_VICORE_V2/02_MOCKUPS/index.html"
-    }
-  ]
+  "buildCommand": "",
+  "outputDirectory": "PROJET_VICORE_V2/02_MOCKUPS"
 }

@@ -1758,6 +1758,416 @@ def generate_report_async(report_id: str):
         db.session.commit()
 ```
 
+### 2.12 Module Conditions Environnementales
+
+#### 2.12.1 Responsabilites
+
+- Collecte des conditions environnementales au moment du passage
+- Agregation des donnees depuis plusieurs sources
+- Calcul du score de qualite des conditions
+- Generation d'alertes si conditions defavorables
+- Affichage des conditions dans l'interface
+
+#### 2.12.2 Structure
+
+```
+app/modules/conditions/
+├── __init__.py          # Blueprint registration
+├── routes.py            # HTTP endpoints
+├── services.py          # Business logic principale
+├── models.py            # TrainPassConditions model
+├── schemas.py           # Validation schemas
+├── sources/             # Sources de donnees
+│   ├── __init__.py
+│   ├── daylight.py      # Calcul jour/nuit (astral)
+│   ├── weather_api.py   # API meteo externe
+│   ├── site_sensors.py  # Capteurs sur site
+│   ├── camera_meta.py   # Metadonnees camera
+│   └── rfid_speed.py    # Vitesse train RFID
+└── analyzers/
+    ├── __init__.py
+    └── image_quality.py # Analyse qualite image IA
+```
+
+#### 2.12.3 Classes Principales
+
+```python
+# models.py
+class TrainPassConditions(db.Model):
+    """Conditions environnementales d'un passage de train."""
+
+    __tablename__ = 'train_pass_conditions'
+
+    id: int
+    train_pass_id: int        # FK vers train_passes
+
+    # Conditions temporelles
+    is_daylight: bool         # Jour ou nuit
+    sun_altitude: float       # Altitude du soleil en degres
+
+    # Conditions meteo
+    temperature_c: float      # Temperature en Celsius
+    humidity_pct: int         # Humidite en %
+    precipitation: bool       # Precipitation detectee
+    visibility_m: int         # Visibilite en metres
+    weather_code: str         # 'clear', 'cloudy', 'rain', 'fog', 'snow'
+
+    # Conditions operationnelles
+    train_speed_kmh: float    # Vitesse du train
+
+    # Qualite camera
+    exposure_ok: bool         # Exposition correcte
+    image_quality: float      # Score 0-1
+
+    # Alertes
+    conditions_alert: bool    # Alerte conditions defavorables
+    alert_reasons: list       # Raisons de l'alerte
+
+    # Metadonnees
+    data_sources: list        # Sources utilisees
+    created_at: datetime
+
+    @property
+    def quality_score(self) -> float:
+        """Calcule le score global de qualite des conditions."""
+        score = 1.0
+
+        # Penalites selon les conditions
+        if not self.is_daylight:
+            score -= 0.15
+        if self.visibility_m and self.visibility_m < 500:
+            score -= 0.3
+        if self.precipitation:
+            score -= 0.2
+        if self.train_speed_kmh and self.train_speed_kmh > 80:
+            score -= 0.1
+        if self.image_quality:
+            score = min(score, self.image_quality)
+
+        return max(0, score)
+
+    @property
+    def is_optimal(self) -> bool:
+        """Les conditions sont-elles optimales pour l'analyse."""
+        return self.quality_score >= 0.8
+```
+
+```python
+# services.py
+class ConditionsService:
+    """Service de gestion des conditions environnementales."""
+
+    def __init__(self,
+                 daylight_source: DaylightSource,
+                 weather_source: WeatherSource,
+                 camera_source: CameraMetadataSource,
+                 rfid_source: RFIDSpeedSource,
+                 sensor_source: SiteSensorSource = None):
+        self.daylight = daylight_source
+        self.weather = weather_source
+        self.camera = camera_source
+        self.rfid = rfid_source
+        self.sensors = sensor_source
+
+    async def collect_conditions(self, train_pass: TrainPass) -> TrainPassConditions:
+        """Collecte toutes les conditions pour un passage."""
+        conditions = TrainPassConditions(train_pass_id=train_pass.id)
+        sources_used = []
+
+        # 1. Calcul jour/nuit (toujours disponible)
+        daylight_data = self.daylight.calculate(
+            passage_time=train_pass.passage_time,
+            site_code=train_pass.installation.code
+        )
+        conditions.is_daylight = daylight_data['is_daylight']
+        conditions.sun_altitude = daylight_data['sun_altitude']
+        sources_used.append('timestamp')
+
+        # 2. Vitesse train (systeme RFID)
+        try:
+            speed = self.rfid.get_speed(train_pass.id)
+            conditions.train_speed_kmh = speed
+            sources_used.append('rfid')
+        except Exception:
+            pass  # Source non disponible
+
+        # 3. Metadonnees camera
+        try:
+            camera_data = self.camera.extract(train_pass.images[0])
+            conditions.exposure_ok = camera_data['exposure_ok']
+            conditions.image_quality = camera_data['quality_score']
+            sources_used.append('camera_metadata')
+        except Exception:
+            pass
+
+        # 4. Capteurs sur site (prioritaires si disponibles)
+        if self.sensors:
+            try:
+                sensor_data = self.sensors.get_conditions(
+                    train_pass.installation.code
+                )
+                conditions.visibility_m = sensor_data.get('visibility_m')
+                conditions.precipitation = sensor_data.get('precipitation', False)
+                conditions.temperature_c = sensor_data.get('temperature_c')
+                sources_used.append('site_sensors')
+            except Exception:
+                pass
+
+        # 5. API meteo (si pas de capteurs site)
+        if 'site_sensors' not in sources_used:
+            try:
+                weather_data = await self.weather.get_current(
+                    lat=train_pass.installation.latitude,
+                    lon=train_pass.installation.longitude
+                )
+                conditions.temperature_c = conditions.temperature_c or weather_data['temperature_c']
+                conditions.visibility_m = conditions.visibility_m or weather_data['visibility_m']
+                conditions.precipitation = conditions.precipitation or weather_data['precipitation']
+                conditions.weather_code = weather_data['conditions']
+                sources_used.append('api_meteo')
+            except Exception:
+                pass
+
+        # Calculer alertes
+        conditions.data_sources = sources_used
+        self._evaluate_alerts(conditions)
+
+        return conditions
+
+    def _evaluate_alerts(self, conditions: TrainPassConditions):
+        """Evalue si des alertes conditions sont necessaires."""
+        alerts = []
+
+        if conditions.visibility_m and conditions.visibility_m < 200:
+            alerts.append('Brouillard detecte (visibilite < 200m)')
+
+        if conditions.precipitation:
+            alerts.append('Precipitation detectee')
+
+        if not conditions.is_daylight:
+            alerts.append('Passage de nuit')
+
+        if conditions.image_quality and conditions.image_quality < 0.6:
+            alerts.append('Qualite image insuffisante')
+
+        if conditions.train_speed_kmh and conditions.train_speed_kmh > 80:
+            alerts.append(f'Vitesse elevee ({conditions.train_speed_kmh} km/h)')
+
+        conditions.conditions_alert = len(alerts) > 0
+        conditions.alert_reasons = alerts
+
+    def get_conditions(self, train_pass_id: int) -> dict:
+        """Retourne les conditions pour affichage."""
+        conditions = TrainPassConditions.query.filter_by(
+            train_pass_id=train_pass_id
+        ).first()
+
+        if not conditions:
+            return None
+
+        return {
+            'train_pass_id': train_pass_id,
+            'conditions': {
+                'daylight': {
+                    'is_day': conditions.is_daylight,
+                    'sun_altitude': conditions.sun_altitude
+                },
+                'weather': {
+                    'temperature_c': conditions.temperature_c,
+                    'conditions': conditions.weather_code,
+                    'precipitation': conditions.precipitation,
+                    'visibility_m': conditions.visibility_m
+                },
+                'operational': {
+                    'train_speed_kmh': conditions.train_speed_kmh
+                },
+                'camera': {
+                    'exposure_ok': conditions.exposure_ok,
+                    'image_quality': conditions.image_quality
+                }
+            },
+            'quality_assessment': {
+                'overall_score': conditions.quality_score,
+                'is_optimal': conditions.is_optimal,
+                'alerts': conditions.alert_reasons or []
+            },
+            'data_sources': conditions.data_sources
+        }
+```
+
+```python
+# sources/daylight.py
+from astral import LocationInfo
+from astral.sun import sun
+from datetime import datetime
+
+# Coordonnees des sites
+SITE_LOCATIONS = {
+    'VOIE_D': LocationInfo('Folkestone', 'England', 'Europe/London', 51.0847, 1.1167),
+    'VOIE_E': LocationInfo('Coquelles', 'France', 'Europe/Paris', 50.9281, 1.8125)
+}
+
+class DaylightSource:
+    """Calcul jour/nuit depuis l'horodatage."""
+
+    def calculate(self, passage_time: datetime, site_code: str) -> dict:
+        """
+        Calcule si le passage est de jour ou de nuit.
+
+        Returns:
+            {
+                'is_daylight': bool,
+                'sun_altitude': float,
+                'civil_twilight': bool
+            }
+        """
+        location = SITE_LOCATIONS.get(site_code)
+        if not location:
+            # Par defaut, utiliser Coquelles
+            location = SITE_LOCATIONS['VOIE_E']
+
+        s = sun(location.observer, date=passage_time.date())
+
+        sunrise = s['sunrise']
+        sunset = s['sunset']
+        dawn = s['dawn']
+        dusk = s['dusk']
+
+        is_daylight = sunrise <= passage_time.replace(tzinfo=sunrise.tzinfo) <= sunset
+        civil_twilight = dawn <= passage_time.replace(tzinfo=dawn.tzinfo) <= dusk
+
+        # Calcul altitude approximatif
+        # (simplification - pour precision utiliser elevation())
+        if is_daylight:
+            midday = s['noon']
+            hours_from_noon = abs((passage_time.hour + passage_time.minute/60) - 12)
+            sun_altitude = max(0, 45 - hours_from_noon * 7.5)  # Approximation
+        else:
+            sun_altitude = -10  # Sous l'horizon
+
+        return {
+            'is_daylight': is_daylight,
+            'sun_altitude': sun_altitude,
+            'civil_twilight': civil_twilight
+        }
+```
+
+```python
+# sources/weather_api.py
+import aiohttp
+from typing import Optional
+
+class WeatherAPISource:
+    """Integration API meteo externe (OpenWeatherMap ou MeteoFrance)."""
+
+    def __init__(self, api_key: str, provider: str = 'openweathermap'):
+        self.api_key = api_key
+        self.provider = provider
+        self.base_urls = {
+            'openweathermap': 'https://api.openweathermap.org/data/2.5/weather',
+            'meteofrance': 'https://api.meteo.fr/v1/current'
+        }
+
+    async def get_current(self, lat: float, lon: float) -> Optional[dict]:
+        """
+        Recupere les conditions meteo actuelles.
+
+        Returns:
+            {
+                'temperature_c': float,
+                'humidity_pct': int,
+                'precipitation': bool,
+                'visibility_m': int,
+                'conditions': str
+            }
+        """
+        if self.provider == 'openweathermap':
+            return await self._fetch_openweathermap(lat, lon)
+        else:
+            return await self._fetch_meteofrance(lat, lon)
+
+    async def _fetch_openweathermap(self, lat: float, lon: float) -> dict:
+        """Fetch depuis OpenWeatherMap API."""
+        url = f"{self.base_urls['openweathermap']}?lat={lat}&lon={lon}&appid={self.api_key}&units=metric"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                data = await response.json()
+
+        return {
+            'temperature_c': data['main']['temp'],
+            'humidity_pct': data['main']['humidity'],
+            'precipitation': data['weather'][0]['main'] in ['Rain', 'Snow', 'Drizzle'],
+            'visibility_m': data.get('visibility', 10000),
+            'conditions': self._map_conditions(data['weather'][0]['main'])
+        }
+
+    def _map_conditions(self, owm_condition: str) -> str:
+        """Mappe les conditions OWM vers nos codes."""
+        mapping = {
+            'Clear': 'clear',
+            'Clouds': 'cloudy',
+            'Rain': 'rain',
+            'Drizzle': 'rain',
+            'Snow': 'snow',
+            'Fog': 'fog',
+            'Mist': 'fog',
+            'Haze': 'fog'
+        }
+        return mapping.get(owm_condition, 'unknown')
+```
+
+#### 2.12.4 Configuration
+
+```python
+# config/conditions.py
+
+CONDITIONS_CONFIG = {
+    # Sources de donnees
+    'sources': {
+        'daylight': {
+            'enabled': True,
+            'library': 'astral'
+        },
+        'rfid': {
+            'enabled': True,
+            'endpoint': '${RFID_API_ENDPOINT}'
+        },
+        'camera_metadata': {
+            'enabled': True,
+            'extract_exif': True
+        },
+        'site_sensors': {
+            'enabled': False,  # A activer si capteurs installes
+            'endpoint': '${SENSORS_API_ENDPOINT}'
+        },
+        'weather_api': {
+            'enabled': True,
+            'provider': 'openweathermap',
+            'api_key': '${WEATHER_API_KEY}',
+            'cache_ttl': 300  # 5 minutes
+        }
+    },
+
+    # Seuils d'alerte
+    'thresholds': {
+        'visibility_poor': 200,      # metres
+        'visibility_moderate': 500,
+        'speed_high': 80,            # km/h
+        'temperature_frost': 2,      # Celsius
+        'temperature_heat': 35,
+        'image_quality_poor': 0.6
+    },
+
+    # Cache Redis
+    'cache': {
+        'enabled': True,
+        'ttl': 3600,  # 1 heure
+        'key_prefix': 'vicore:conditions:'
+    }
+}
+```
+
 ---
 
 ## 3. Diagrammes de Classes

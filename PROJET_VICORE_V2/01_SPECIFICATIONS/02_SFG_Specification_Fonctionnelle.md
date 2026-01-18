@@ -840,7 +840,50 @@ Chaque fonctionnalite est liee aux exigences du document SRS via une matrice de 
 - Consultations de rapports
 - Exports de donnees
 
-### 4.8 Regles de Generation Rapports
+### 4.8 Regles des Conditions Environnementales
+
+Les conditions environnementales sont collectees et affichees pour chaque passage de train afin d'expliquer les variations de confiance dans l'analyse d'images.
+
+| ID | Regle | Description |
+|----|-------|-------------|
+| RG-COND-01 | Sources multiples | Les conditions sont collectees depuis plusieurs sources (voir tableau ci-dessous) |
+| RG-COND-02 | Horodatage | Le jour/nuit est calcule automatiquement depuis l'heure de passage et les coordonnees |
+| RG-COND-03 | Vitesse train | La vitesse est recuperee depuis le systeme RFID/capteurs existant |
+| RG-COND-04 | Meteo externe | Les donnees meteo peuvent provenir d'une API externe (MeteoFrance, OpenWeatherMap) |
+| RG-COND-05 | Capteurs locaux | Si disponibles, les capteurs sur site (visibilite, pluie) sont prioritaires |
+| RG-COND-06 | Analyse image | L'IA peut detecter des conditions defavorables (gouttelettes, buee, faible contraste) |
+| RG-COND-07 | Affichage | Les conditions sont affichees sur le Dashboard, System View et Car View |
+| RG-COND-08 | Alerte conditions | Une alerte est affichee si les conditions sont defavorables pour l'analyse |
+
+**Sources de donnees des conditions environnementales:**
+
+| Source | Donnees | Disponibilite | Priorite |
+|--------|---------|---------------|----------|
+| **Horodatage passage** | Jour/Nuit (calcul astronomique) | Automatique | Haute |
+| **Systeme RFID** | Vitesse du train | Deja disponible | Haute |
+| **Metadonnees camera** | Luminosite, exposition, qualite image | Automatique | Haute |
+| **Capteurs sur site** | Visibilite (brouillard), pluie, temperature | Si installes | Haute |
+| **API meteo externe** | Temperature, precipitations, conditions generales | Integration requise | Moyenne |
+| **Analyse d'image IA** | Detection gouttelettes, buee, contraste faible | Via modele IA | Basse |
+
+**Conditions impactant l'analyse:**
+
+| Condition | Impact sur confiance | Seuil d'alerte |
+|-----------|---------------------|----------------|
+| **Nuit** | Reduction moderee | Heure entre coucher et lever du soleil |
+| **Brouillard** | Reduction importante | Visibilite < 200m |
+| **Pluie** | Reduction moderee a importante | Precipitations detectees |
+| **Vitesse elevee** | Reduction legere | > 60 km/h |
+| **Temperature extreme** | Reduction legere (buee) | < 0°C ou > 35°C |
+| **Faible luminosite** | Reduction moderee | Exposition camera sous seuil |
+
+**Affichage des conditions:**
+
+- **Dashboard Alertes**: Badge compact avec icones (soleil/lune, pluie, brouillard, temperature, vitesse)
+- **System View**: Resume des conditions dans l'en-tete du train selectionne
+- **Car View**: Panneau detaille avec toutes les conditions de capture
+
+### 4.9 Regles de Generation Rapports
 
 | ID | Regle | Description |
 |----|-------|-------------|

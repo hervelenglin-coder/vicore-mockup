@@ -2100,7 +2100,291 @@ VICORE <------ HTTP/SSE ------> Heartbeat System
 }
 ```
 
-### 9.2 Systeme de Cameras
+### 9.2 Acquisition des Conditions Environnementales
+
+#### 9.2.1 Architecture d'Acquisition
+
+```
++------------------+     +------------------+     +------------------+
+|  Sources Auto    |     |  Sources Ext.    |     |  Sources IA      |
+|  - Horodatage    |     |  - API Meteo     |     |  - Analyse image |
+|  - Vitesse RFID  |     |  - Capteurs site |     |  - Detection     |
+|  - Metadata cam  |     |                  |     |    conditions    |
++--------+---------+     +--------+---------+     +--------+---------+
+         |                        |                        |
+         +------------------------+------------------------+
+                                  |
+                                  v
+                    +---------------------------+
+                    |   ConditionsService       |
+                    |   - Aggregation donnees   |
+                    |   - Calcul qualite        |
+                    |   - Cache Redis           |
+                    +---------------------------+
+                                  |
+                                  v
+                    +---------------------------+
+                    |   Base de donnees         |
+                    |   Table: train_pass_cond  |
+                    +---------------------------+
+```
+
+#### 9.2.2 Sources de Donnees
+
+**1. Horodatage et Calcul Jour/Nuit**
+
+```python
+# Calcul automatique depuis l'heure de passage
+def calculate_daylight(passage_time: datetime, lat: float, lon: float) -> dict:
+    """
+    Calcule si le passage est de jour ou de nuit.
+
+    Args:
+        passage_time: Heure du passage
+        lat, lon: Coordonnees du site (Folkestone/Coquelles)
+
+    Returns:
+        {
+            "is_daylight": True/False,
+            "sun_altitude": float,  # Degrees above horizon
+            "civil_twilight": True/False
+        }
+    """
+    # Utilise la librairie 'astral' pour le calcul
+    pass
+
+# Coordonnees des sites
+SITE_COORDINATES = {
+    'VOIE_D': {'lat': 51.0847, 'lon': 1.1167},   # Folkestone
+    'VOIE_E': {'lat': 50.9281, 'lon': 1.8125}    # Coquelles
+}
+```
+
+**2. Vitesse du Train (Systeme RFID)**
+
+```python
+# Recuperation depuis le systeme RFID existant
+class RFIDDataService:
+    def get_train_speed(self, train_pass_id: int) -> float:
+        """
+        Recupere la vitesse du train depuis les capteurs RFID.
+
+        Returns:
+            Vitesse en km/h
+        """
+        # Integration avec le systeme RFID existant
+        pass
+```
+
+**3. Metadonnees Camera**
+
+```python
+# Extraction des metadonnees EXIF/camera
+class CameraMetadataService:
+    def extract_metadata(self, image_path: str) -> dict:
+        """
+        Extrait les metadonnees de capture.
+
+        Returns:
+            {
+                "exposure_time": float,      # Secondes
+                "iso": int,
+                "aperture": float,
+                "brightness_value": float,
+                "image_quality_score": float  # 0-1
+            }
+        """
+        pass
+```
+
+**4. API Meteo Externe (Optionnel)**
+
+```python
+# Integration API meteo
+WEATHER_API_CONFIG = {
+    'provider': 'openweathermap',  # ou 'meteofrance'
+    'api_key': '${WEATHER_API_KEY}',
+    'cache_ttl': 300,  # 5 minutes
+    'endpoints': {
+        'openweathermap': 'https://api.openweathermap.org/data/2.5/weather',
+        'meteofrance': 'https://api.meteo.fr/v1/current'
+    }
+}
+
+class WeatherAPIService:
+    def get_current_conditions(self, lat: float, lon: float) -> dict:
+        """
+        Recupere les conditions meteo actuelles.
+
+        Returns:
+            {
+                "temperature_c": float,
+                "humidity_percent": int,
+                "precipitation_mm": float,
+                "visibility_m": int,
+                "conditions": str,  # 'clear', 'cloudy', 'rain', 'fog'
+                "wind_speed_kmh": float
+            }
+        """
+        pass
+```
+
+**5. Capteurs Sur Site (Si Disponibles)**
+
+```python
+# Interface capteurs locaux Eurotunnel
+class SiteSensorService:
+    """
+    Service pour les capteurs meteorologiques sur site.
+    A implementer selon l'infrastructure disponible chez Eurotunnel.
+    """
+
+    def get_visibility(self, site_code: str) -> int:
+        """Retourne la visibilite en metres."""
+        pass
+
+    def get_precipitation(self, site_code: str) -> bool:
+        """Retourne True si precipitation detectee."""
+        pass
+
+    def get_temperature(self, site_code: str) -> float:
+        """Retourne la temperature en Celsius."""
+        pass
+```
+
+**6. Analyse d'Image IA (Detection de Conditions)**
+
+```python
+# Detection de conditions via analyse d'image
+class ImageConditionAnalyzer:
+    """
+    Analyse les images pour detecter des conditions defavorables.
+    """
+
+    def analyze_image(self, image_path: str) -> dict:
+        """
+        Analyse une image pour detecter des conditions defavorables.
+
+        Returns:
+            {
+                "water_droplets_detected": bool,
+                "fog_detected": bool,
+                "low_contrast": bool,
+                "blur_score": float,  # 0-1, 1=net
+                "overall_quality": float  # 0-1
+            }
+        """
+        pass
+```
+
+#### 9.2.3 Modele de Donnees Conditions
+
+```sql
+-- Table des conditions par passage de train
+CREATE TABLE train_pass_conditions (
+    id              SERIAL PRIMARY KEY,
+    train_pass_id   INTEGER NOT NULL REFERENCES train_passes(id) ON DELETE CASCADE,
+
+    -- Conditions temporelles
+    is_daylight     BOOLEAN,
+    sun_altitude    DECIMAL(5,2),
+
+    -- Conditions meteo
+    temperature_c   DECIMAL(4,1),
+    humidity_pct    INTEGER,
+    precipitation   BOOLEAN,
+    visibility_m    INTEGER,
+    weather_code    VARCHAR(20),  -- 'clear', 'cloudy', 'rain', 'fog', 'snow'
+
+    -- Conditions operationnelles
+    train_speed_kmh DECIMAL(5,1),
+
+    -- Qualite camera
+    exposure_ok     BOOLEAN,
+    image_quality   DECIMAL(3,2),  -- Score 0-1
+
+    -- Alertes conditions
+    conditions_alert BOOLEAN DEFAULT FALSE,
+    alert_reasons   TEXT[],  -- Array of reasons
+
+    -- Metadonnees
+    data_sources    TEXT[],  -- Sources utilisees: 'timestamp', 'rfid', 'api_meteo', 'sensors', 'camera'
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_train_pass_conditions UNIQUE (train_pass_id)
+);
+
+CREATE INDEX idx_tpc_train_pass ON train_pass_conditions(train_pass_id);
+CREATE INDEX idx_tpc_alert ON train_pass_conditions(conditions_alert) WHERE conditions_alert = TRUE;
+```
+
+#### 9.2.4 API Conditions
+
+```
+GET /api/v1/train-passes/{id}/conditions
+
+Response 200:
+{
+    "success": true,
+    "data": {
+        "train_pass_id": 1234,
+        "conditions": {
+            "daylight": {
+                "is_day": true,
+                "time_of_day": "14:32",
+                "sun_altitude": 25.5
+            },
+            "weather": {
+                "temperature_c": 8,
+                "conditions": "clear",
+                "precipitation": false,
+                "visibility_m": 10000
+            },
+            "operational": {
+                "train_speed_kmh": 42
+            },
+            "camera": {
+                "exposure_ok": true,
+                "image_quality": 0.92
+            }
+        },
+        "quality_assessment": {
+            "overall_score": 0.95,
+            "is_optimal": true,
+            "alerts": []
+        },
+        "data_sources": ["timestamp", "rfid", "camera_metadata", "api_meteo"]
+    }
+}
+```
+
+#### 9.2.5 Configuration des Seuils
+
+```python
+CONDITIONS_THRESHOLDS = {
+    'visibility': {
+        'good': 1000,      # > 1000m = conditions bonnes
+        'moderate': 500,   # 500-1000m = conditions moderees
+        'poor': 200        # < 200m = alerte brouillard
+    },
+    'train_speed': {
+        'optimal': 50,     # < 50 km/h = optimal
+        'acceptable': 80,  # 50-80 km/h = acceptable
+        'high': 100        # > 80 km/h = vitesse elevee
+    },
+    'temperature': {
+        'frost_risk': 2,   # < 2°C = risque givre/buee
+        'heat_risk': 35    # > 35°C = risque surchauffe
+    },
+    'image_quality': {
+        'good': 0.8,       # > 0.8 = bonne qualite
+        'acceptable': 0.6, # 0.6-0.8 = acceptable
+        'poor': 0.4        # < 0.6 = qualite insuffisante
+    }
+}
+```
+
+### 9.3 Systeme de Cameras
 
 #### 9.2.1 Integration
 

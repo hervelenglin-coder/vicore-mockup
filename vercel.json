@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "^/$",
+      "dest": "/PROJET_VICORE_V2/02_MOCKUPS/index.html"
+    },
+    {
       "src": "/mockups/(.*)",
       "dest": "/PROJET_VICORE_V2/02_MOCKUPS/$1"
     },

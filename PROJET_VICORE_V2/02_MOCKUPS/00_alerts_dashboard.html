@@ -553,16 +553,6 @@
             </nav>
         </div>
         <div class="header-right">
-            <!-- Direction Indicator -->
-            <div class="direction-indicator nominal" id="directionIndicator" onclick="toggleDirection()" title="Cliquez pour inverser le sens">
-                <div class="direction-icon">&#128646;</div>
-                <div class="direction-info">
-                    <span class="direction-label">Sens circulation</span>
-                    <span class="direction-value" id="directionValue">
-                        Sortie Tunnel <span class="direction-arrow">&#8594;</span> Quais
-                    </span>
-                </div>
-            </div>
             <div class="refresh-indicator">
                 <span class="refresh-dot"></span>
                 <span>Temps reel</span>
@@ -603,32 +593,6 @@
                     <p style="color: var(--text-muted); font-size: 14px;">Ressorts necessitant une verification manuelle</p>
                 </div>
                 <a href="02_system_view.html" class="btn btn-secondary">Voir tous les trains &rarr;</a>
-            </div>
-
-            <!-- Direction Panel -->
-            <div class="direction-panel nominal" id="directionPanel">
-                <div class="direction-panel-content">
-                    <div class="direction-panel-icon">&#128646;</div>
-                    <div class="direction-panel-text">
-                        <h4 id="directionPanelTitle">Mode Nominal</h4>
-                        <p id="directionPanelDesc">Les trains circulent de la sortie tunnel vers les quais</p>
-                    </div>
-                </div>
-                <div class="direction-panel-visual">
-                    <div class="direction-point">
-                        <div class="direction-point-icon" id="directionPointStart">&#127748;</div>
-                        <span class="direction-point-label" id="directionLabelStart">Tunnel</span>
-                    </div>
-                    <div class="direction-flow">
-                        <span>&#8594;</span>
-                        <span>&#8594;</span>
-                        <span>&#8594;</span>
-                    </div>
-                    <div class="direction-point">
-                        <div class="direction-point-icon" id="directionPointEnd">&#128647;</div>
-                        <span class="direction-point-label" id="directionLabelEnd">Quais</span>
-                    </div>
-                </div>
             </div>
 
             <!-- Statistics Cards -->
@@ -677,6 +641,7 @@
                                     <span>Voie D</span>
                                     <span>18/01/2026 14:32</span>
                                     <span>ETMR-9704-LOC2B</span>
+                                    <span class="direction-badge nominal" title="Sens de circulation detecte par le systeme">&#128646; Tunnel &#8594; Quais</span>
                                 </div>
                                 <div class="conditions-badge">
                                     <span class="condition-good">&#9728; Jour</span>
@@ -733,6 +698,7 @@
                                     <span>Voie D</span>
                                     <span>18/01/2026 13:42</span>
                                     <span>ETMR-8501-AMC1B</span>
+                                    <span class="direction-badge nominal" title="Sens de circulation detecte par le systeme">&#128646; Tunnel &#8594; Quais</span>
                                 </div>
                                 <div class="conditions-badge">
                                     <span class="condition-good">&#9728; Jour</span>
@@ -780,6 +746,7 @@
                                     <span>Voie E</span>
                                     <span>18/01/2026 14:10</span>
                                     <span>ETMR-9102-PTC3A</span>
+                                    <span class="direction-badge inverted" title="Sens de circulation detecte par le systeme">&#128646; Quais &#8594; Tunnel</span>
                                 </div>
                                 <div class="conditions-badge">
                                     <span class="condition-good">&#9728; Jour</span>
@@ -849,6 +816,7 @@
                                     <span>Voie D</span>
                                     <span>18/01/2026 12:17</span>
                                     <span>ETMR-7650-LOC1A</span>
+                                    <span class="direction-badge nominal" title="Sens de circulation detecte par le systeme">&#128646; Tunnel &#8594; Quais</span>
                                 </div>
                                 <div class="conditions-badge">
                                     <span class="condition-good">&#9728; Jour</span>
@@ -955,61 +923,7 @@
         // Expand all groups by default on load
         document.addEventListener('DOMContentLoaded', function() {
             // First group is already expanded via HTML class
-            // Load direction state from localStorage
-            const savedDirection = localStorage.getItem('trainDirection') || 'nominal';
-            if (savedDirection === 'inverted') {
-                setDirection('inverted');
-            }
         });
-
-        // Train direction toggle
-        let isNominal = true;
-
-        function toggleDirection() {
-            isNominal = !isNominal;
-            setDirection(isNominal ? 'nominal' : 'inverted');
-            localStorage.setItem('trainDirection', isNominal ? 'nominal' : 'inverted');
-        }
-
-        function setDirection(mode) {
-            const indicator = document.getElementById('directionIndicator');
-            const panel = document.getElementById('directionPanel');
-            const value = document.getElementById('directionValue');
-            const panelTitle = document.getElementById('directionPanelTitle');
-            const panelDesc = document.getElementById('directionPanelDesc');
-            const pointStart = document.getElementById('directionPointStart');
-            const pointEnd = document.getElementById('directionPointEnd');
-            const labelStart = document.getElementById('directionLabelStart');
-            const labelEnd = document.getElementById('directionLabelEnd');
-
-            if (mode === 'nominal') {
-                isNominal = true;
-                indicator.classList.remove('inverted');
-                indicator.classList.add('nominal');
-                panel.classList.remove('inverted');
-                panel.classList.add('nominal');
-                value.innerHTML = 'Sortie Tunnel <span class="direction-arrow">&#8594;</span> Quais';
-                panelTitle.textContent = 'Mode Nominal';
-                panelDesc.textContent = 'Les trains circulent de la sortie tunnel vers les quais';
-                pointStart.innerHTML = '&#127748;';
-                pointEnd.innerHTML = '&#128647;';
-                labelStart.textContent = 'Tunnel';
-                labelEnd.textContent = 'Quais';
-            } else {
-                isNominal = false;
-                indicator.classList.remove('nominal');
-                indicator.classList.add('inverted');
-                panel.classList.remove('nominal');
-                panel.classList.add('inverted');
-                value.innerHTML = 'Quais <span class="direction-arrow">&#8592;</span> Entree Tunnel';
-                panelTitle.textContent = 'Mode Inverse';
-                panelDesc.textContent = 'Les trains circulent des quais vers l\'entree tunnel';
-                pointStart.innerHTML = '&#128647;';
-                pointEnd.innerHTML = '&#127748;';
-                labelStart.textContent = 'Quais';
-                labelEnd.textContent = 'Tunnel';
-            }
-        }
     </script>
 </body>
 </html>

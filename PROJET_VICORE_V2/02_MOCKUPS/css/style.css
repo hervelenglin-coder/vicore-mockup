@@ -1804,14 +1804,9 @@ tr:hover {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 10px;
-    cursor: pointer;
+    cursor: default;
     transition: all 0.3s ease;
     user-select: none;
-}
-
-.direction-indicator:hover {
-    border-color: var(--accent-cyan);
-    background: var(--bg-hover);
 }
 
 .direction-indicator.nominal {

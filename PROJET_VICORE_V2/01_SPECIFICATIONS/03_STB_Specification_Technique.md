@@ -487,7 +487,7 @@ CREATE TABLE train_passes (
     installation_id   INTEGER REFERENCES installations(id),
     passage_time      TIMESTAMP NOT NULL,
     direction         VARCHAR(20) NOT NULL,          -- Direction geographique
-    train_direction   VARCHAR(10) NOT NULL DEFAULT 'normal', -- Sens de marche: normal ou tiroir
+    train_direction   VARCHAR(10) NOT NULL DEFAULT 'normal', -- Sens de circulation: 'normal' (Sens normal, sortie tunnel vers quais) ou 'tiroir' (En tiroir, quais vers tunnel)
     train_number      VARCHAR(20),
     status            VARCHAR(20) NOT NULL DEFAULT 'pending',
     created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

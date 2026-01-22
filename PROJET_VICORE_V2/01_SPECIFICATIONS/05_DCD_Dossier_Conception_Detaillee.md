@@ -254,7 +254,7 @@ class TrainPass(db.Model):
     installation_id: int         # FK vers installations (Voie D, Voie E, etc.)
     passage_time: datetime
     direction: str               # france_uk, uk_france (direction geographique)
-    train_direction: str         # 'normal' ou 'tiroir' (sens de marche du train)
+    train_direction: str         # 'normal' (Sens normal: sortie tunnel vers quais) ou 'tiroir' (En tiroir: quais vers tunnel)
     train_number: str
     status: str                  # pending, in_progress, confirmed, alert
     created_at: datetime

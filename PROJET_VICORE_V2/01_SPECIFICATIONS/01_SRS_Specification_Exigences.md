@@ -505,15 +505,23 @@ Des cameras installees aux entrees du tunnel capturent des images des ressorts d
 | **Types** | - Locomotive (Loco)<br>- Wagon Chargeur (Chargeur)<br>- Wagon Porteur (Porteur) |
 | **Affichage** | Sous l'identifiant RFID sur chaque carte wagon |
 
-### 5.10 Direction du Train
+### 5.10 Sens de Circulation du Train
 
-#### ENF-DIR-01: Direction du Train
+#### ENF-DIR-01: Sens de Circulation
 | Attribut | Valeur |
 |----------|--------|
-| **Description** | Affichage de la direction du train (sens de marche) |
-| **Valeurs** | - Normal: sens de marche standard<br>- Tiroir: sens de marche inverse |
-| **Affichage** | Dans les metadonnees du train selectionne, a cote de la direction geographique |
-| **Impact** | La direction influence l'interpretation des positions Menant/Mene des ressorts |
+| **Description** | Affichage du sens de circulation du train |
+| **Source** | Donnee fournie par le systeme de captation d'images (lecture seule) |
+| **Valeurs** | - **Sens normal** (vert): Sortie tunnel vers quais (direction nominale)<br>- **En tiroir** (jaune): Quais vers entree tunnel (direction inversee) |
+| **Affichage** | Badge dans les metadonnees de chaque train pass |
+| **Caracteristiques** | - Non modifiable par l'operateur<br>- Determine automatiquement par le systeme de captation<br>- Propre a chaque passage de train |
+
+#### ENF-DIR-02: Impact du Sens de Circulation
+| Attribut | Valeur |
+|----------|--------|
+| **Description** | Impact du sens de circulation sur l'interpretation des donnees |
+| **Impact visuel** | La direction influence l'interpretation des positions Menant/Mene des ressorts |
+| **Impact operationnel** | L'operateur doit tenir compte du sens pour interpreter correctement les positions des ressorts |
 
 ### 5.11 Nomenclature des Ressorts
 

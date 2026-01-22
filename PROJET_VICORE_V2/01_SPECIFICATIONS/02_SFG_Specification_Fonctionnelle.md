@@ -432,7 +432,7 @@ Chaque fonctionnalite est liee aux exigences du document SRS via une matrice de 
 | +------------------+  |  +------------------------------------+  |
 | | TRAIN PASSES     |  |  | 9N57 - 1234                        |  |
 | |                  |  |  | 2026-01-17 14:32:45                |  |
-| | VOIE D           |  |  | Direction: France > UK | Normal    |  |
+| | VOIE D           |  |  | Sens: [Sens normal]                |  |
 | | +-------------+  |  |  |                                    |  |
 | | | 9N57-1234   |  |  |  | SPRINGS: 192  WARN: 3  CRIT: 0    |  |
 | | | 14:32 [OK]  |  |  |  |                                    |  |
@@ -459,7 +459,7 @@ Chaque fonctionnalite est liee aux exigences du document SRS via une matrice de 
 - Header: Logo, Status, Heure, Langue, Utilisateur, Logout
 - Panneau gauche: Liste train passes par installation (Voie D, Voie E)
 - Panneau droit: Grille des wagons du train selectionne
-- Direction train: "Normal" ou "Tiroir" affiche avec la direction geographique
+- Sens de circulation: "Sens normal" (vert) ou "En tiroir" (jaune) affiche comme badge
 - Type wagon: Affiche sous le numero (Loco, Chargeur, Porteur)
 - Legende avec bouton [?] pour popup explicatif des statuts
 - Statistiques: Compteurs springs/warnings/criticals
@@ -802,7 +802,7 @@ Chaque fonctionnalite est liee aux exigences du document SRS via une matrice de 
 | RG-SPRING-01 | Structure wagon | Chaque wagon possede 2 bogies, 2 essieux par bogie, 2 roues par essieu, 2 ressorts par roue = 16 ressorts |
 | RG-SPRING-02 | Position Menant | Ressort Menant (Leading): situe avant la roue dans le sens de marche normal |
 | RG-SPRING-03 | Position Mene | Ressort Mene (Trailing): situe apres la roue dans le sens de marche normal |
-| RG-SPRING-04 | Direction impact | En mode "Tiroir", les positions Menant/Mene sont inversees visuellement |
+| RG-SPRING-04 | Direction impact | En mode "En tiroir", les positions Menant/Mene sont inversees visuellement |
 | RG-SPRING-05 | Format ID | Format: W{wagon}-B{bogie}-E{essieu}-{G\|D}-{M\|m} (ex: W2-B1-E2-G-M) |
 
 ### 4.10 Regles Types de Wagon
@@ -814,14 +814,16 @@ Chaque fonctionnalite est liee aux exigences du document SRS via une matrice de 
 | RG-TYPE-03 | Porteur | Wagon porteur - wagon standard de transport |
 | RG-TYPE-04 | Affichage | Le type est affiche sur chaque carte wagon sous le RFID |
 
-### 4.11 Regles Direction Train
+### 4.11 Regles Sens de Circulation Train
 
 | ID | Regle | Description |
 |----|-------|-------------|
-| RG-DIR-01 | Normal | Direction normale: sens de marche standard du train |
-| RG-DIR-02 | Tiroir | Direction tiroir: sens de marche inverse (le train pousse au lieu de tirer) |
-| RG-DIR-03 | Affichage | La direction est affichee dans les metadonnees du train |
-| RG-DIR-04 | Impact | La direction influence l'interpretation visuelle des ressorts Menant/Mene |
+| RG-DIR-01 | Sens normal | Sortie tunnel vers quais - sens de marche standard du train (badge vert) |
+| RG-DIR-02 | En tiroir | Quais vers entree tunnel - sens de marche inverse (badge jaune) |
+| RG-DIR-03 | Source | Le sens de circulation est fourni par le systeme de captation d'images (lecture seule, non modifiable par l'operateur) |
+| RG-DIR-04 | Par passage | Chaque train pass possede son propre sens de circulation dans la base de donnees |
+| RG-DIR-05 | Affichage | Le sens est affiche comme badge sur le Dashboard Alertes, System View, Car View et Historique |
+| RG-DIR-06 | Impact | Le sens influence l'interpretation visuelle des ressorts Menant/Mene |
 
 ### 4.7 Regles d'Audit Trail
 

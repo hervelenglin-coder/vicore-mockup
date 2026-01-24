@@ -241,3 +241,51 @@ pre-commit run --all-files
 - **Project Plan:** `PROJET_VICORE_V2/00_PLAN_PROJET.md`
 - **Architecture:** `ARCHITECTURE_DIAGRAMS.md`
 - **UI/UX Improvements:** `AMELIORATIONS_UI_UX.md`
+
+---
+
+## Session Context (Last Updated: 2026-01-24)
+
+### Recent Work Completed
+
+#### Sens de Circulation Feature (Direction Indicator)
+Added train circulation direction indicator to VICORE V2 mockups and documentation:
+
+**Terminology:**
+- **Sens normal** (green badge): Sortie tunnel vers quais - normal direction
+- **En tiroir** (yellow badge): Quais vers entrée tunnel - reversed direction
+
+**Key Implementation Details:**
+- Direction is **read-only** data from the capture system database
+- Each train pass has its own direction value (not a global setting)
+- Operators cannot modify the direction - it's metadata from image capture
+- Badge displayed on: Dashboard alerts, System View, Car View, Spring History
+
+**Files Modified:**
+- `PROJET_VICORE_V2/02_MOCKUPS/css/style.css` - Direction badge styles (.direction-badge.nominal, .direction-badge.inverted)
+- `PROJET_VICORE_V2/02_MOCKUPS/00_alerts_dashboard.html` - Per-train-pass direction badges
+- `PROJET_VICORE_V2/02_MOCKUPS/02_system_view.html` - Direction badge in train details
+- `PROJET_VICORE_V2/02_MOCKUPS/03_car_view.html` - Direction badge in bogie panel
+- `PROJET_VICORE_V2/02_MOCKUPS/04_historique_ressort.html` - Direction badge in header
+
+**Documentation Updated:**
+- `01_SRS`: Section 5.10 - ENF-DIR-01, ENF-DIR-02 requirements
+- `02_SFG`: Section 3.2 mockup, Section 4.11 RG-DIR rules
+- `03_STB`: Database schema comments for train_direction column
+- `05_DCD`: TrainPass dataclass documentation
+
+**Database Schema:**
+```sql
+train_direction VARCHAR(10) NOT NULL DEFAULT 'normal'
+-- Values: 'normal' (Sens normal) or 'tiroir' (En tiroir)
+```
+
+### Deployment Status
+- **Mockups deployed** to https://vicore-mockup.vercel.app
+- **Git remote:** `vicore-mockup` → `hervelenglin-coder/vicore-mockup.git`
+- **Branch mapping:** Push `master:main` for Vercel deployment
+
+### Pending/Future Work
+- Implement actual backend for direction data from capture system
+- Add direction filtering in train pass list
+- Consider direction impact on spring position visualization (Menant/Mené inversion)
